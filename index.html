@@ -1511,33 +1511,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 7. Comprehensive URL & Telegram Param Extraction ---
     const extractUrlParams = () => {
-        const searchParams = new URLSearchParams(window.location.search);
-        let d = searchParams.get('d') || searchParams.get('data');
-        let inv = searchParams.get('inv') || searchParams.get('invite_id') || searchParams.get('invite');
-        let mode = searchParams.get('mode');
+        let fullQuery = window.location.search || '';
+        let hash = window.location.hash || '';
+        
+        let d = null;
+        let inv = null;
+        let mode = null;
 
-        if (window.location.hash) {
+        // 1. Search params
+        if (fullQuery) {
             try {
-                const hashStr = window.location.hash.substring(1);
-                const hashParams = new URLSearchParams(hashStr);
-                if (!d && hashParams.get('d')) d = hashParams.get('d');
-                if (!d && hashParams.get('data')) d = hashParams.get('data');
-                if (!d && hashParams.get('tgWebAppStartParam')) {
-                    const sp = hashParams.get('tgWebAppStartParam');
-                    if (sp.startsWith('d_')) d = sp.substring(2);
-                    else if (sp.startsWith('inv_')) inv = sp;
+                const searchParams = new URLSearchParams(fullQuery);
+                d = searchParams.get('d') || searchParams.get('data');
+                inv = searchParams.get('inv') || searchParams.get('invite_id') || searchParams.get('invite');
+                mode = searchParams.get('mode');
+                
+                // Also check if start_param was passed in search
+                const spSearch = searchParams.get('tgWebAppStartParam') || searchParams.get('start_param') || searchParams.get('start');
+                if (spSearch) {
+                    if (spSearch.startsWith('d_')) d = spSearch.substring(2);
+                    else if (spSearch.startsWith('inv_')) inv = spSearch;
+                    else if (!d && spSearch.length > 20) d = spSearch;
                 }
-                if (!inv && hashParams.get('inv')) inv = hashParams.get('inv');
-                if (!mode && hashParams.get('mode')) mode = hashParams.get('mode');
             } catch (e) {}
         }
 
-        const tgStartParam = tg?.initDataUnsafe?.start_param;
-        if (tgStartParam) {
-            if (tgStartParam.startsWith('d_')) d = tgStartParam.substring(2);
-            else if (tgStartParam.startsWith('inv_')) inv = tgStartParam;
-            else if (tgStartParam.startsWith('date_')) inv = tgStartParam.replace(/^date_/, 'inv_');
+        // 2. Hash params (if Telegram or browser passed data in hash)
+        if (hash) {
+            try {
+                const hashClean = hash.startsWith('#') ? hash.substring(1) : hash;
+                const hashParams = new URLSearchParams(hashClean);
+                if (!d) d = hashParams.get('d') || hashParams.get('data');
+                if (!inv) inv = hashParams.get('inv') || hashParams.get('invite_id');
+                if (!mode) mode = hashParams.get('mode');
+                
+                const spHash = hashParams.get('tgWebAppStartParam') || hashParams.get('start_param');
+                if (spHash) {
+                    if (spHash.startsWith('d_')) d = spHash.substring(2);
+                    else if (spHash.startsWith('inv_')) inv = spHash;
+                    else if (!d && spHash.length > 20) d = spHash;
+                }
+            } catch (e) {}
         }
+
+        // 3. Telegram WebApp SDK start_param
+        try {
+            const tgSp = window.Telegram?.WebApp?.initDataUnsafe?.start_param;
+            if (tgSp) {
+                if (tgSp.startsWith('d_')) d = tgSp.substring(2);
+                else if (tgSp.startsWith('inv_')) inv = tgSp;
+                else if (tgSp.startsWith('date_')) inv = tgSp.replace(/^date_/, 'inv_');
+                else if (!d && !inv && tgSp.length > 20) d = tgSp;
+            }
+        } catch (e) {}
 
         return { d, inv, mode };
     };
@@ -2142,12 +2168,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const initApp = async () => {
         renderBuilderChips();
 
+        const currentParams = extractUrlParams();
+        console.log('[Svidanka] Loaded params:', currentParams);
+
         // 1. Check for Base64 encoded state in URL
-        if (urlConfig.d) {
-            const parsed = decodeInviteState(urlConfig.d);
+        if (currentParams.d) {
+            const parsed = decodeInviteState(currentParams.d);
             if (parsed) {
+                console.log('[Svidanka] Successfully decoded guest invite:', parsed);
                 const inviteData = {
-                    id: 'd_' + urlConfig.d,
+                    id: 'd_' + currentParams.d,
                     creatorChatId: parsed.c || DEFAULT_CREATOR_CHAT_ID,
                     creatorName: parsed.n || '',
                     targetName: parsed.t || 'Моя половинка',
@@ -2163,9 +2193,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Check for backend invite ID
-        if (urlConfig.inv && urlConfig.inv !== 'preview') {
+        if (currentParams.inv && currentParams.inv !== 'preview') {
             try {
-                const res = await fetch(`/api/invites/${urlConfig.inv}`);
+                const res = await fetch(`/api/invites/${currentParams.inv}`);
                 if (res.ok) {
                     const data = await res.json();
                     setupGuestViewWithInvite(data.invite);
@@ -2179,7 +2209,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (urlConfig.mode === 'guest') {
+        if (currentParams.mode === 'guest') {
             prepareGuestFromBuilder();
             switchMode('guest');
         } else {
