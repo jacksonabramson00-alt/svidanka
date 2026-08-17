@@ -1274,96 +1274,113 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
     };
 
-    // --- 2. Base64 UTF-8 State Encoder / Decoder (Zero-Backend Independent Storage) ---
+    // --- 2. Base64 UTF-8 State Encoder / Decoder ---
     const encodeInviteState = (obj) => {
         try {
             const json = JSON.stringify(obj);
-            return btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            const utf8Bytes = encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1));
+            return btoa(utf8Bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
         } catch (e) {
+            console.error('Encode error:', e);
             return '';
         }
     };
 
     const decodeInviteState = (str) => {
+        if (!str) return null;
         try {
-            let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            let clean = str.trim();
+            if (clean.startsWith('d_')) clean = clean.substring(2);
+            let base64 = clean.replace(/-/g, '+').replace(/_/g, '/');
             while (base64.length % 4) base64 += '=';
-            const json = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-            return JSON.parse(json);
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const decodedJson = new TextDecoder('utf-8').decode(bytes);
+            return JSON.parse(decodedJson);
         } catch (e) {
-            return null;
+            try {
+                let base64 = str.replace(/^d_/, '').replace(/-/g, '+').replace(/_/g, '/');
+                while (base64.length % 4) base64 += '=';
+                const json = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                return JSON.parse(json);
+            } catch (err2) {
+                console.error('Decode fallback error:', err2);
+                return null;
+            }
         }
     };
 
     // --- 3. Ambient Particle Canvas Engine ---
     const canvas = document.getElementById('particleCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas ? canvas.getContext('2d') : null;
     let particles = [];
 
-    const resizeCanvas = () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    if (canvas && ctx) {
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
-    const heartSymbols = ['💖', '💕', '✨', '🌸', '✨', '❤️'];
+        const heartSymbols = ['💖', '💕', '✨', '🌸', '✨', '❤️'];
 
-    class Particle {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = canvas.height + Math.random() * 50;
-            this.size = Math.random() * 15 + 10;
-            this.speedY = Math.random() * 1.1 + 0.5;
-            this.speedX = (Math.random() - 0.5) * 0.7;
-            this.opacity = Math.random() * 0.55 + 0.2;
-            this.char = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
-            this.rotation = Math.random() * Math.PI * 2;
-            this.rotationSpeed = (Math.random() - 0.5) * 0.02;
-        }
-        update() {
-            this.y -= this.speedY;
-            this.x += this.speedX;
-            this.rotation += this.rotationSpeed;
-            if (this.y < -40 || this.x < -40 || this.x > canvas.width + 40) {
-                this.reset();
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + Math.random() * 50;
+                this.size = Math.random() * 15 + 10;
+                this.speedY = Math.random() * 1.1 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.7;
+                this.opacity = Math.random() * 0.55 + 0.2;
+                this.char = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+            }
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+                if (this.y < -40 || this.x < -40 || this.x > canvas.width + 40) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.font = `${this.size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.char, 0, 0);
+                ctx.restore();
             }
         }
-        draw() {
-            ctx.save();
-            ctx.globalAlpha = this.opacity;
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.rotation);
-            ctx.font = `${this.size}px serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(this.char, 0, 0);
-            ctx.restore();
-        }
+
+        const initParticles = () => {
+            const count = Math.min(20, Math.floor(window.innerWidth / 24));
+            particles = [];
+            for (let i = 0; i < count; i++) {
+                const p = new Particle();
+                p.y = Math.random() * canvas.height;
+                particles.push(p);
+            }
+        };
+        initParticles();
+
+        const animateParticles = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        };
+        animateParticles();
     }
-
-    const initParticles = () => {
-        const count = Math.min(20, Math.floor(window.innerWidth / 24));
-        particles = [];
-        for (let i = 0; i < count; i++) {
-            const p = new Particle();
-            p.y = Math.random() * canvas.height;
-            particles.push(p);
-        }
-    };
-    initParticles();
-
-    const animateParticles = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
-        });
-        requestAnimationFrame(animateParticles);
-    };
-    animateParticles();
 
     // --- 4. Confetti Animation Engine ---
     const fireConfetti = () => {
@@ -1492,22 +1509,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 7. Extract Query & Telegram Params ---
-    const urlParams = new URLSearchParams(window.location.search);
-    let urlInviteId = urlParams.get('inv') || urlParams.get('invite_id') || urlParams.get('invite');
-    let urlEncodedData = urlParams.get('d') || urlParams.get('data');
-    const startParam = tg?.initDataUnsafe?.start_param;
+    // --- 7. Comprehensive URL & Telegram Param Extraction ---
+    const extractUrlParams = () => {
+        const searchParams = new URLSearchParams(window.location.search);
+        let d = searchParams.get('d') || searchParams.get('data');
+        let inv = searchParams.get('inv') || searchParams.get('invite_id') || searchParams.get('invite');
+        let mode = searchParams.get('mode');
 
-    if (startParam) {
-        if (startParam.startsWith('d_')) {
-            urlEncodedData = startParam.substring(2);
-        } else {
-            const cleanParam = startParam.replace(/^date_/, 'inv_');
-            if (cleanParam.startsWith('inv_')) {
-                urlInviteId = cleanParam;
-            }
+        if (window.location.hash) {
+            try {
+                const hashStr = window.location.hash.substring(1);
+                const hashParams = new URLSearchParams(hashStr);
+                if (!d && hashParams.get('d')) d = hashParams.get('d');
+                if (!d && hashParams.get('data')) d = hashParams.get('data');
+                if (!d && hashParams.get('tgWebAppStartParam')) {
+                    const sp = hashParams.get('tgWebAppStartParam');
+                    if (sp.startsWith('d_')) d = sp.substring(2);
+                    else if (sp.startsWith('inv_')) inv = sp;
+                }
+                if (!inv && hashParams.get('inv')) inv = hashParams.get('inv');
+                if (!mode && hashParams.get('mode')) mode = hashParams.get('mode');
+            } catch (e) {}
         }
-    }
+
+        const tgStartParam = tg?.initDataUnsafe?.start_param;
+        if (tgStartParam) {
+            if (tgStartParam.startsWith('d_')) d = tgStartParam.substring(2);
+            else if (tgStartParam.startsWith('inv_')) inv = tgStartParam;
+            else if (tgStartParam.startsWith('date_')) inv = tgStartParam.replace(/^date_/, 'inv_');
+        }
+
+        return { d, inv, mode };
+    };
+
+    const urlConfig = extractUrlParams();
+    const urlParams = new URLSearchParams(window.location.search);
 
     if (tg?.initDataUnsafe?.user) {
         appState.creatorChatId = String(tg.initDataUnsafe.user.id || DEFAULT_CREATOR_CHAT_ID);
@@ -1516,8 +1552,6 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.creatorChatId = urlParams.get('creator_id') || DEFAULT_CREATOR_CHAT_ID;
         appState.creatorName = urlParams.get('creator_name') || '';
     }
-
-    const forceMode = urlParams.get('mode');
 
     // --- 8. DOM Elements ---
     const constructorView = document.getElementById('constructorView');
@@ -1569,6 +1603,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const builderActivityChips = document.getElementById('builderActivityChips');
 
     const renderBuilderChips = () => {
+        if (!builderFoodChips || !builderActivityChips) return;
         // Food Chips
         builderFoodChips.innerHTML = '';
         appState.builder.foodList.forEach((item) => {
@@ -1609,38 +1644,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add Custom Food
     const customFoodInput = document.getElementById('customFoodInput');
     const addCustomFoodBtn = document.getElementById('addCustomFoodBtn');
-    addCustomFoodBtn.addEventListener('click', () => {
-        const val = customFoodInput.value.trim();
-        if (!val) return;
-        triggerHaptic('medium');
-        appState.builder.foodList.push({
-            id: 'custom_food_' + Date.now(),
-            label: val,
-            icon: '✨',
-            enabled: true
+    if (addCustomFoodBtn && customFoodInput) {
+        addCustomFoodBtn.addEventListener('click', () => {
+            const val = customFoodInput.value.trim();
+            if (!val) return;
+            triggerHaptic('medium');
+            appState.builder.foodList.push({
+                id: 'custom_food_' + Date.now(),
+                label: val,
+                icon: '✨',
+                enabled: true
+            });
+            customFoodInput.value = '';
+            renderBuilderChips();
+            showToast('Вариант еды добавлен! 🍽️');
         });
-        customFoodInput.value = '';
-        renderBuilderChips();
-        showToast('Вариант еды добавлен! 🍽️');
-    });
+    }
 
     // Add Custom Activity
     const customActivityInput = document.getElementById('customActivityInput');
     const addCustomActivityBtn = document.getElementById('addCustomActivityBtn');
-    addCustomActivityBtn.addEventListener('click', () => {
-        const val = customActivityInput.value.trim();
-        if (!val) return;
-        triggerHaptic('medium');
-        appState.builder.activityList.push({
-            id: 'custom_act_' + Date.now(),
-            label: val,
-            icon: '💫',
-            enabled: true
+    if (addCustomActivityBtn && customActivityInput) {
+        addCustomActivityBtn.addEventListener('click', () => {
+            const val = customActivityInput.value.trim();
+            if (!val) return;
+            triggerHaptic('medium');
+            appState.builder.activityList.push({
+                id: 'custom_act_' + Date.now(),
+                label: val,
+                icon: '💫',
+                enabled: true
+            });
+            customActivityInput.value = '';
+            renderBuilderChips();
+            showToast('Вариант досуга добавлен! 🎭');
         });
-        customActivityInput.value = '';
-        renderBuilderChips();
-        showToast('Вариант досуга добавлен! 🎭');
-    });
+    }
 
     // --- 11. Constructor: Generate Invite & Show Share Modal ---
     const generateInviteBtn = document.getElementById('generateInviteBtn');
@@ -1651,122 +1690,117 @@ document.addEventListener('DOMContentLoaded', () => {
     const shareInTgBtn = document.getElementById('shareInTgBtn');
     const testInviteBtn = document.getElementById('testInviteBtn');
 
-    let currentGeneratedBotUrl = '';
-    let currentGeneratedWebUrl = '';
+    let currentGeneratedUrl = '';
 
-    generateInviteBtn.addEventListener('click', async () => {
-        triggerHaptic('success');
+    if (generateInviteBtn) {
+        generateInviteBtn.addEventListener('click', async () => {
+            triggerHaptic('success');
 
-        const targetNameInput = document.getElementById('targetNameInput');
-        const customQuestionInput = document.getElementById('customQuestionInput');
-        const customSubtitleInput = document.getElementById('customSubtitleInput');
+            const targetNameInput = document.getElementById('targetNameInput');
+            const customQuestionInput = document.getElementById('customQuestionInput');
+            const customSubtitleInput = document.getElementById('customSubtitleInput');
 
-        const targetName = targetNameInput.value.trim() || 'Моя половинка';
-        const question = customQuestionInput.value.trim() || 'Пойдёшь со мной на свидание?';
-        const subtitle = customSubtitleInput.value.trim() || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
+            const targetName = targetNameInput?.value.trim() || 'Моя половинка';
+            const question = customQuestionInput?.value.trim() || 'Пойдёшь со мной на свидание?';
+            const subtitle = customSubtitleInput?.value.trim() || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
 
-        const enabledFood = appState.builder.foodList.filter(f => f.enabled);
-        const enabledActivity = appState.builder.activityList.filter(a => a.enabled);
+            const enabledFood = appState.builder.foodList.filter(f => f.enabled);
+            const enabledActivity = appState.builder.activityList.filter(a => a.enabled);
 
-        if (enabledFood.length === 0) {
-            showToast('⚠️ Выберите хотя бы 1 вариант еды');
-            return;
-        }
-        if (enabledActivity.length === 0) {
-            showToast('⚠️ Выберите хотя бы 1 вариант досуга');
-            return;
-        }
-
-        const compactState = {
-            t: targetName,
-            q: question,
-            s: subtitle,
-            f: enabledFood.map(item => ({ l: item.label, i: item.icon })),
-            a: enabledActivity.map(item => ({ l: item.label, i: item.icon })),
-            c: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
-            n: appState.creatorName || ''
-        };
-
-        const encoded = encodeInviteState(compactState);
-        const baseUrl = window.location.origin + window.location.pathname;
-
-        // Default direct links with embedded state (always works 100% on any static host)
-        currentGeneratedBotUrl = `https://t.me/${appState.botUsername}?start=d_${encoded}`;
-        currentGeneratedWebUrl = `${baseUrl}?d=${encoded}`;
-
-        const payload = {
-            creatorChatId: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
-            creatorName: appState.creatorName,
-            targetName,
-            question,
-            subtitle,
-            foodOptions: enabledFood,
-            activityOptions: enabledActivity
-        };
-
-        appState.loadedInvite = { id: 'd_' + encoded, ...payload };
-
-        // Try backend API if online
-        try {
-            const res = await fetch('/api/invites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-                const data = await res.json();
-                appState.currentInviteId = data.inviteId;
-                if (data.botUrl) currentGeneratedBotUrl = data.botUrl;
-                if (data.webUrl) currentGeneratedWebUrl = data.webUrl;
+            if (enabledFood.length === 0) {
+                showToast('⚠️ Выберите хотя бы 1 вариант еды');
+                return;
             }
-        } catch (e) {}
+            if (enabledActivity.length === 0) {
+                showToast('⚠️ Выберите хотя бы 1 вариант досуга');
+                return;
+            }
 
-        shareLinkText.textContent = currentGeneratedBotUrl;
-        shareModal.classList.add('active');
-        fireConfetti();
-    });
+            const compactState = {
+                t: targetName,
+                q: question,
+                s: subtitle,
+                f: enabledFood.map(item => ({ l: item.label, i: item.icon })),
+                a: enabledActivity.map(item => ({ l: item.label, i: item.icon })),
+                c: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
+                n: appState.creatorName || ''
+            };
 
-    closeModalBtn.addEventListener('click', () => {
-        shareModal.classList.remove('active');
-    });
+            const encoded = encodeInviteState(compactState);
+            const baseUrl = window.location.origin + window.location.pathname;
+            
+            // Direct web URL with embedded full state (works 100% reliably anywhere)
+            currentGeneratedUrl = `${baseUrl}?d=${encoded}`;
 
-    copyLinkBtn.addEventListener('click', () => {
-        triggerHaptic('medium');
-        navigator.clipboard.writeText(currentGeneratedBotUrl).then(() => {
-            copyLinkBtn.textContent = 'Скопировано! ✓';
-            showToast('Ссылка скопирована в буфер обмена! 💌');
-            setTimeout(() => { copyLinkBtn.textContent = 'Скопировать'; }, 2000);
+            const payload = {
+                creatorChatId: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
+                creatorName: appState.creatorName,
+                targetName,
+                question,
+                subtitle,
+                foodOptions: enabledFood,
+                activityOptions: enabledActivity
+            };
+
+            appState.loadedInvite = { id: 'd_' + encoded, ...payload };
+
+            shareLinkText.textContent = currentGeneratedUrl;
+            shareModal.classList.add('active');
+            fireConfetti();
         });
-    });
+    }
 
-    shareInTgBtn.addEventListener('click', () => {
-        triggerHaptic('success');
-        const targetName = document.getElementById('targetNameInput').value.trim() || 'тебя';
-        const text = `У меня для ${targetName === 'тебя' ? 'тебя' : targetName} особенный вопрос и сюрприз... 💌✨\n\nОткрой приглашение:`;
-        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(currentGeneratedBotUrl)}&text=${encodeURIComponent(text)}`;
-        window.open(shareUrl, '_blank');
-    });
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            shareModal.classList.remove('active');
+        });
+    }
 
-    testInviteBtn.addEventListener('click', () => {
-        triggerHaptic('medium');
-        shareModal.classList.remove('active');
-        if (appState.loadedInvite) {
-            setupGuestViewWithInvite(appState.loadedInvite);
-        } else {
-            prepareGuestFromBuilder();
-        }
-        switchMode('guest');
-    });
+    if (copyLinkBtn) {
+        copyLinkBtn.addEventListener('click', () => {
+            triggerHaptic('medium');
+            navigator.clipboard.writeText(currentGeneratedUrl).then(() => {
+                copyLinkBtn.textContent = 'Скопировано! ✓';
+                showToast('Ссылка скопирована в буфер обмена! 💌');
+                setTimeout(() => { copyLinkBtn.textContent = 'Скопировать'; }, 2000);
+            });
+        });
+    }
+
+    if (shareInTgBtn) {
+        shareInTgBtn.addEventListener('click', () => {
+            triggerHaptic('success');
+            const targetName = document.getElementById('targetNameInput')?.value.trim() || 'тебя';
+            const text = `У меня для ${targetName === 'тебя' ? 'тебя' : targetName} особенный сюрприз и приглашение... 💌✨\n\nОткрой свидание:`;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(currentGeneratedUrl)}&text=${encodeURIComponent(text)}`;
+            window.open(shareUrl, '_blank');
+        });
+    }
+
+    if (testInviteBtn) {
+        testInviteBtn.addEventListener('click', () => {
+            triggerHaptic('medium');
+            shareModal.classList.remove('active');
+            if (appState.loadedInvite) {
+                setupGuestViewWithInvite(appState.loadedInvite);
+            } else {
+                prepareGuestFromBuilder();
+            }
+            switchMode('guest');
+        });
+    }
 
     // --- 12. Guest Flow Stepper ---
     const updateGuestStep = (stepIndex) => {
         appState.currentGuestStep = stepIndex;
 
         guestSteps.forEach((step, idx) => {
-            if (idx + 1 === stepIndex) {
-                step.classList.add('active');
-            } else {
-                step.classList.remove('active');
+            if (step) {
+                if (idx + 1 === stepIndex) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
             }
         });
 
@@ -1788,14 +1822,16 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    backBtn.addEventListener('click', () => {
-        triggerHaptic('light');
-        if (appState.currentGuestStep > 1 && appState.currentGuestStep < 5) {
-            updateGuestStep(appState.currentGuestStep - 1);
-        } else if (appState.currentGuestStep === 5) {
-            updateGuestStep(4);
-        }
-    });
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            triggerHaptic('light');
+            if (appState.currentGuestStep > 1 && appState.currentGuestStep < 5) {
+                updateGuestStep(appState.currentGuestStep - 1);
+            } else if (appState.currentGuestStep === 5) {
+                updateGuestStep(4);
+            }
+        });
+    }
 
     // Step 1: Running "No" Button
     const yesBtn = document.getElementById('yesBtn');
@@ -1825,22 +1861,28 @@ document.addEventListener('DOMContentLoaded', () => {
         noBtn.textContent = noPhrases[phraseIndex];
     };
 
-    noBtn.addEventListener('mouseover', moveNoButton);
-    noBtn.addEventListener('touchstart', (e) => { moveNoButton(e); }, { passive: false });
-    noBtn.addEventListener('click', (e) => { moveNoButton(e); });
+    if (noBtn) {
+        noBtn.addEventListener('mouseover', moveNoButton);
+        noBtn.addEventListener('touchstart', (e) => { moveNoButton(e); }, { passive: false });
+        noBtn.addEventListener('click', (e) => { moveNoButton(e); });
+    }
 
-    yesBtn.addEventListener('click', () => {
-        triggerHaptic('success');
-        fireConfetti();
-        noBtn.style.position = 'relative';
-        noBtn.style.left = 'auto';
-        noBtn.style.top = 'auto';
-        noBtn.textContent = "Нет 😢";
+    if (yesBtn) {
+        yesBtn.addEventListener('click', () => {
+            triggerHaptic('success');
+            fireConfetti();
+            if (noBtn) {
+                noBtn.style.position = 'relative';
+                noBtn.style.left = 'auto';
+                noBtn.style.top = 'auto';
+                noBtn.textContent = "Нет 😢";
+            }
 
-        setTimeout(() => {
-            updateGuestStep(2);
-        }, 350);
-    });
+            setTimeout(() => {
+                updateGuestStep(2);
+            }, 350);
+        });
+    }
 
     // --- 13. Setup Guest View from Invite / Builder Data ---
     const guestFoodOptionsContainer = document.getElementById('guestFoodOptions');
@@ -1856,58 +1898,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const target = invite.targetName || 'Любимая';
         const questionText = invite.question || 'Пойдёшь со мной на свидание?';
-        guestMainTitle.innerHTML = `${target}, ${questionText} <span class="heart-pulse">💖</span>`;
-        guestSubtitle.textContent = invite.subtitle || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
+        if (guestMainTitle) guestMainTitle.innerHTML = `${target}, ${questionText} <span class="heart-pulse">💖</span>`;
+        if (guestSubtitle) guestSubtitle.textContent = invite.subtitle || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
 
         // Populate Food
-        guestFoodOptionsContainer.innerHTML = '';
-        nextToActivityBtn.disabled = true;
-        const foods = (invite.foodOptions || DEFAULT_FOOD).filter(f => f.enabled !== false);
-        foods.forEach(food => {
-            const card = document.createElement('div');
-            card.className = 'option-card';
-            card.setAttribute('data-value', food.label);
-            card.innerHTML = `
-                <span class="option-icon">${food.icon || '🍽️'}</span>
-                <span class="option-label">${food.label}</span>
-            `;
-            card.addEventListener('click', () => {
-                triggerHaptic('light');
-                document.querySelectorAll('#guestFoodOptions .option-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                appState.guestAnswers.food = food.label;
-                nextToActivityBtn.disabled = false;
+        if (guestFoodOptionsContainer) {
+            guestFoodOptionsContainer.innerHTML = '';
+            if (nextToActivityBtn) nextToActivityBtn.disabled = true;
+            const foods = (invite.foodOptions || DEFAULT_FOOD).filter(f => f.enabled !== false);
+            foods.forEach(food => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.setAttribute('data-value', food.label);
+                card.innerHTML = `
+                    <span class="option-icon">${food.icon || '🍽️'}</span>
+                    <span class="option-label">${food.label}</span>
+                `;
+                card.addEventListener('click', () => {
+                    triggerHaptic('light');
+                    document.querySelectorAll('#guestFoodOptions .option-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    appState.guestAnswers.food = food.label;
+                    if (nextToActivityBtn) nextToActivityBtn.disabled = false;
+                });
+                guestFoodOptionsContainer.appendChild(card);
             });
-            guestFoodOptionsContainer.appendChild(card);
-        });
+        }
 
         // Populate Activities
-        guestActivityOptionsContainer.innerHTML = '';
-        nextToTimeBtn.disabled = true;
-        const activities = (invite.activityOptions || DEFAULT_ACTIVITIES).filter(a => a.enabled !== false);
-        activities.forEach(act => {
-            const card = document.createElement('div');
-            card.className = 'option-card';
-            card.setAttribute('data-value', act.label);
-            card.innerHTML = `
-                <span class="option-icon">${act.icon || '✨'}</span>
-                <span class="option-label">${act.label}</span>
-            `;
-            card.addEventListener('click', () => {
-                triggerHaptic('light');
-                document.querySelectorAll('#guestActivityOptions .option-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                appState.guestAnswers.activity = act.label;
-                nextToTimeBtn.disabled = false;
+        if (guestActivityOptionsContainer) {
+            guestActivityOptionsContainer.innerHTML = '';
+            if (nextToTimeBtn) nextToTimeBtn.disabled = true;
+            const activities = (invite.activityOptions || DEFAULT_ACTIVITIES).filter(a => a.enabled !== false);
+            activities.forEach(act => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.setAttribute('data-value', act.label);
+                card.innerHTML = `
+                    <span class="option-icon">${act.icon || '✨'}</span>
+                    <span class="option-label">${act.label}</span>
+                `;
+                card.addEventListener('click', () => {
+                    triggerHaptic('light');
+                    document.querySelectorAll('#guestActivityOptions .option-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    appState.guestAnswers.activity = act.label;
+                    if (nextToTimeBtn) nextToTimeBtn.disabled = false;
+                });
+                guestActivityOptionsContainer.appendChild(card);
             });
-            guestActivityOptionsContainer.appendChild(card);
-        });
+        }
     };
 
     const prepareGuestFromBuilder = () => {
-        const target = document.getElementById('targetNameInput').value.trim() || 'Моя половинка';
-        const question = document.getElementById('customQuestionInput').value.trim() || 'Пойдёшь со мной на свидание?';
-        const subtitle = document.getElementById('customSubtitleInput').value.trim() || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
+        const target = document.getElementById('targetNameInput')?.value.trim() || 'Моя половинка';
+        const question = document.getElementById('customQuestionInput')?.value.trim() || 'Пойдёшь со мной на свидание?';
+        const subtitle = document.getElementById('customSubtitleInput')?.value.trim() || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
 
         setupGuestViewWithInvite({
             id: appState.currentInviteId || 'test_preview',
@@ -1920,15 +1966,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    nextToActivityBtn.addEventListener('click', () => {
-        triggerHaptic('medium');
-        updateGuestStep(3);
-    });
+    if (nextToActivityBtn) {
+        nextToActivityBtn.addEventListener('click', () => {
+            triggerHaptic('medium');
+            updateGuestStep(3);
+        });
+    }
 
-    nextToTimeBtn.addEventListener('click', () => {
-        triggerHaptic('medium');
-        updateGuestStep(4);
-    });
+    if (nextToTimeBtn) {
+        nextToTimeBtn.addEventListener('click', () => {
+            triggerHaptic('medium');
+            updateGuestStep(4);
+        });
+    }
 
     // Step 4: Date, Time & Presets
     const datePicker = document.getElementById('datePicker');
@@ -1937,63 +1987,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishBtn = document.getElementById('finishBtn');
     const presetBtns = document.querySelectorAll('.chip-btn');
 
-    const today = new Date();
-    const formatDateYYYYMMDD = (d) => {
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-    datePicker.min = formatDateYYYYMMDD(today);
+    if (datePicker && timePicker) {
+        const today = new Date();
+        const formatDateYYYYMMDD = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        datePicker.min = formatDateYYYYMMDD(today);
 
-    const validateStep4 = () => {
-        if (datePicker.value && timePicker.value) {
-            appState.guestAnswers.date = datePicker.value;
-            appState.guestAnswers.time = timePicker.value;
-            appState.guestAnswers.notes = notesInput.value.trim();
-            finishBtn.disabled = false;
-        } else {
-            finishBtn.disabled = true;
-        }
-    };
-
-    datePicker.addEventListener('change', () => {
-        presetBtns.forEach(btn => btn.classList.remove('active'));
-        validateStep4();
-    });
-    timePicker.addEventListener('change', validateStep4);
-    notesInput.addEventListener('input', () => {
-        appState.guestAnswers.notes = notesInput.value.trim();
-    });
-
-    presetBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            triggerHaptic('light');
-            presetBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            const preset = btn.getAttribute('data-preset');
-            const targetDate = new Date();
-
-            if (preset === 'today') {
-                // Today
-            } else if (preset === 'tomorrow') {
-                targetDate.setDate(targetDate.getDate() + 1);
-            } else if (preset === 'friday') {
-                const day = targetDate.getDay();
-                const diff = (5 - day + 7) % 7 || 7;
-                targetDate.setDate(targetDate.getDate() + diff);
-            } else if (preset === 'weekend') {
-                const day = targetDate.getDay();
-                const diff = (6 - day + 7) % 7 || 7;
-                targetDate.setDate(targetDate.getDate() + diff);
+        const validateStep4 = () => {
+            if (datePicker.value && timePicker.value) {
+                appState.guestAnswers.date = datePicker.value;
+                appState.guestAnswers.time = timePicker.value;
+                appState.guestAnswers.notes = notesInput ? notesInput.value.trim() : '';
+                if (finishBtn) finishBtn.disabled = false;
+            } else {
+                if (finishBtn) finishBtn.disabled = true;
             }
+        };
 
-            datePicker.value = formatDateYYYYMMDD(targetDate);
-            if (!timePicker.value) timePicker.value = '19:00';
+        datePicker.addEventListener('change', () => {
+            presetBtns.forEach(btn => btn.classList.remove('active'));
             validateStep4();
         });
-    });
+        timePicker.addEventListener('change', validateStep4);
+        if (notesInput) {
+            notesInput.addEventListener('input', () => {
+                appState.guestAnswers.notes = notesInput.value.trim();
+            });
+        }
+
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                triggerHaptic('light');
+                presetBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const preset = btn.getAttribute('data-preset');
+                const targetDate = new Date();
+
+                if (preset === 'today') {
+                    // Today
+                } else if (preset === 'tomorrow') {
+                    targetDate.setDate(targetDate.getDate() + 1);
+                } else if (preset === 'friday') {
+                    const day = targetDate.getDay();
+                    const diff = (5 - day + 7) % 7 || 7;
+                    targetDate.setDate(targetDate.getDate() + diff);
+                } else if (preset === 'weekend') {
+                    const day = targetDate.getDay();
+                    const diff = (6 - day + 7) % 7 || 7;
+                    targetDate.setDate(targetDate.getDate() + diff);
+                }
+
+                datePicker.value = formatDateYYYYMMDD(targetDate);
+                if (!timePicker.value) timePicker.value = '19:00';
+                validateStep4();
+            });
+        });
+    }
 
     // Step 5: Finish & Universal Delivery
     const summaryFood = document.getElementById('summaryFood');
@@ -2015,100 +2069,85 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    finishBtn.addEventListener('click', async () => {
-        triggerHaptic('success');
-        appState.guestAnswers.notes = notesInput.value.trim();
+    if (finishBtn) {
+        finishBtn.addEventListener('click', async () => {
+            triggerHaptic('success');
+            if (notesInput) appState.guestAnswers.notes = notesInput.value.trim();
 
-        const formattedDate = formatDisplayDate(appState.guestAnswers.date);
-        summaryFood.textContent = appState.guestAnswers.food || 'Вкусно покушать';
-        summaryActivity.textContent = appState.guestAnswers.activity || 'Отличный вечер';
-        summaryDate.textContent = formattedDate;
-        summaryTime.textContent = appState.guestAnswers.time || '19:00';
+            const formattedDate = formatDisplayDate(appState.guestAnswers.date);
+            if (summaryFood) summaryFood.textContent = appState.guestAnswers.food || 'Вкусно покушать';
+            if (summaryActivity) summaryActivity.textContent = appState.guestAnswers.activity || 'Отличный вечер';
+            if (summaryDate) summaryDate.textContent = formattedDate;
+            if (summaryTime) summaryTime.textContent = appState.guestAnswers.time || '19:00';
 
-        if (appState.guestAnswers.notes) {
-            summaryNote.textContent = appState.guestAnswers.notes;
-            summaryNoteRow.style.display = 'grid';
-        } else {
-            summaryNoteRow.style.display = 'none';
-        }
+            if (appState.guestAnswers.notes) {
+                if (summaryNote) summaryNote.textContent = appState.guestAnswers.notes;
+                if (summaryNoteRow) summaryNoteRow.style.display = 'grid';
+            } else {
+                if (summaryNoteRow) summaryNoteRow.style.display = 'none';
+            }
 
-        updateGuestStep(5);
-        fireConfetti();
+            updateGuestStep(5);
+            fireConfetti();
 
-        const creatorChatId = appState.loadedInvite?.creatorChatId || DEFAULT_CREATOR_CHAT_ID;
-        const targetName = appState.loadedInvite?.targetName || 'Гостья';
+            const creatorChatId = appState.loadedInvite?.creatorChatId || DEFAULT_CREATOR_CHAT_ID;
+            const targetName = appState.loadedInvite?.targetName || 'Гостья';
 
-        let botMsg = `🎉💖 *Ура! Твоё приглашение на свидание принято!* 🥰\n\n`;
-        botMsg += `👤 *От кого:* ${targetName}\n`;
-        botMsg += `🍽️ *Еда:* ${appState.guestAnswers.food}\n`;
-        botMsg += `🎭 *План:* ${appState.guestAnswers.activity}\n`;
-        botMsg += `📅 *Дата:* ${formattedDate}\n`;
-        botMsg += `⏰ *Время:* ${appState.guestAnswers.time}\n`;
-        if (appState.guestAnswers.notes) {
-            botMsg += `💬 *Пожелание:* «${appState.guestAnswers.notes}»\n`;
-        }
-        botMsg += `\n✨ _Готовься к идеальному вечеру!_ 🥂`;
+            let botMsg = `🎉💖 *Ура! Твоё приглашение на свидание принято!* 🥰\n\n`;
+            botMsg += `👤 *От кого:* ${targetName}\n`;
+            botMsg += `🍽️ *Еда:* ${appState.guestAnswers.food}\n`;
+            botMsg += `🎭 *План:* ${appState.guestAnswers.activity}\n`;
+            botMsg += `📅 *Дата:* ${formattedDate}\n`;
+            botMsg += `⏰ *Время:* ${appState.guestAnswers.time}\n`;
+            if (appState.guestAnswers.notes) {
+                botMsg += `💬 *Пожелание:* «${appState.guestAnswers.notes}»\n`;
+            }
+            botMsg += `\n✨ _Готовься к идеальному вечеру!_ 🥂`;
 
-        // 1. Direct Telegram Bot API Call (Works 100% on ANY static host / Netlify / GitHub Pages!)
-        try {
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: creatorChatId,
-                    text: botMsg,
-                    parse_mode: 'Markdown'
-                })
-            }).catch(() => {});
-        } catch (e) {}
-
-        // 2. Also notify backend API if reachable
-        const inviteId = appState.currentInviteId;
-        if (inviteId && !inviteId.startsWith('d_')) {
+            // Direct Telegram Bot API Delivery
             try {
-                fetch(`/api/invites/${inviteId}/respond`, {
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        food: appState.guestAnswers.food,
-                        activity: appState.guestAnswers.activity,
-                        date: formattedDate,
-                        time: appState.guestAnswers.time,
-                        notes: appState.guestAnswers.notes,
-                        respondentName: targetName
+                        chat_id: creatorChatId,
+                        text: botMsg,
+                        parse_mode: 'Markdown'
                     })
                 }).catch(() => {});
             } catch (e) {}
-        }
-    });
+        });
+    }
 
-    sendTgBtn.addEventListener('click', () => {
-        triggerHaptic('medium');
-        const formattedDate = formatDisplayDate(appState.guestAnswers.date);
-        let text = `Я согласна на свидание! 🎉💖\n\n🍽️ Еда: ${appState.guestAnswers.food}\n🎭 План: ${appState.guestAnswers.activity}\n📅 Дата: ${formattedDate}\n⏰ Время: ${appState.guestAnswers.time}`;
-        if (appState.guestAnswers.notes) {
-            text += `\n💬 Пожелание: ${appState.guestAnswers.notes}`;
-        }
-        text += `\n\nЖду встречи! 🥰✨`;
+    if (sendTgBtn) {
+        sendTgBtn.addEventListener('click', () => {
+            triggerHaptic('medium');
+            const formattedDate = formatDisplayDate(appState.guestAnswers.date);
+            let text = `Я согласна на свидание! 🎉💖\n\n🍽️ Еда: ${appState.guestAnswers.food}\n🎭 План: ${appState.guestAnswers.activity}\n📅 Дата: ${formattedDate}\n⏰ Время: ${appState.guestAnswers.time}`;
+            if (appState.guestAnswers.notes) {
+                text += `\n💬 Пожелание: ${appState.guestAnswers.notes}`;
+            }
+            text += `\n\nЖду встречи! 🥰✨`;
 
-        if (tg && typeof tg.sendData === 'function') {
-            tg.sendData(text);
-        } else {
-            const telegramUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
-            window.open(telegramUrl, '_blank');
-        }
-    });
+            if (tg && typeof tg.sendData === 'function') {
+                tg.sendData(text);
+            } else {
+                const telegramUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
+                window.open(telegramUrl, '_blank');
+            }
+        });
+    }
 
     // --- 14. Initial Bootstrapping & State Parsing ---
     const initApp = async () => {
         renderBuilderChips();
 
         // 1. Check for Base64 encoded state in URL
-        if (urlEncodedData) {
-            const parsed = decodeInviteState(urlEncodedData);
+        if (urlConfig.d) {
+            const parsed = decodeInviteState(urlConfig.d);
             if (parsed) {
                 const inviteData = {
-                    id: 'd_' + urlEncodedData,
+                    id: 'd_' + urlConfig.d,
                     creatorChatId: parsed.c || DEFAULT_CREATOR_CHAT_ID,
                     creatorName: parsed.n || '',
                     targetName: parsed.t || 'Моя половинка',
@@ -2124,9 +2163,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Check for backend invite ID
-        if (urlInviteId && urlInviteId !== 'preview') {
+        if (urlConfig.inv && urlConfig.inv !== 'preview') {
             try {
-                const res = await fetch(`/api/invites/${urlInviteId}`);
+                const res = await fetch(`/api/invites/${urlConfig.inv}`);
                 if (res.ok) {
                     const data = await res.json();
                     setupGuestViewWithInvite(data.invite);
@@ -2140,7 +2179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (forceMode === 'guest') {
+        if (urlConfig.mode === 'guest') {
             prepareGuestFromBuilder();
             switchMode('guest');
         } else {
@@ -2154,5 +2193,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </script>
 </body>
-
 </html>
