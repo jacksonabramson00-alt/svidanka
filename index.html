@@ -8,967 +8,1064 @@
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #ff3377 0%, #ff6584 50%, #ff8ea3 100%);
-            --primary-gradient-hover: linear-gradient(135deg, #ff1a66 0%, #ff4d73 50%, #ff7593 100%);
-            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #d946ef 50%, #ec4899 100%);
-            --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            --primary-glow: rgba(255, 51, 119, 0.45);
-            --accent-glow: rgba(168, 85, 247, 0.4);
-            --secondary-glass: rgba(255, 255, 255, 0.08);
-            --secondary-border: rgba(255, 255, 255, 0.16);
-            --card-bg: rgba(24, 12, 36, 0.82);
-            --card-border: rgba(255, 255, 255, 0.14);
-            --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 35px rgba(255, 51, 119, 0.12);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.82);
-            --text-muted: rgba(255, 255, 255, 0.6);
-            --accent-gold: #ffd166;
-            --accent-green: #4ade80;
-            --radius-card: 26px;
-            --radius-btn: 18px;
-            --radius-input: 16px;
-            --radius-chip: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        html, body {
-            width: 100%;
-            min-height: 100%;
-            background-color: #0d0517;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(255, 51, 119, 0.22) 0%, transparent 45%),
-                radial-gradient(circle at 85% 85%, rgba(138, 43, 226, 0.22) 0%, transparent 50%),
-                linear-gradient(160deg, #180927 0%, #0d0517 100%);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 16px 12px 32px;
-        }
-
-        #particleCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .app-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 460px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .top-bar {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 6px 4px;
-        }
-
-        .brand-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            color: #ff8ea3;
-            background: rgba(255, 51, 119, 0.12);
-            border: 1px solid rgba(255, 51, 119, 0.25);
-            padding: 5px 12px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .mode-toggle-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid var(--secondary-border);
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 16px;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .mode-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            transform: translateY(-1px);
-        }
-
-        .stepper-header {
-            width: 100%;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            padding: 4px 6px;
-        }
-
-        .stepper-header.visible {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .back-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--secondary-border);
-            color: var(--text-primary);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.2s ease;
-        }
-
-        .back-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        .back-btn:active {
-            transform: scale(0.95);
-        }
-
-        .stepper-dots {
-            display: flex;
-            gap: 7px;
-            align-items: center;
-        }
-
-        .dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .dot.active {
-            width: 22px;
-            border-radius: 12px;
-            background: var(--primary-gradient);
-            box-shadow: 0 0 10px var(--primary-glow);
-        }
-
-        .step-indicator-badge {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-        }
-
-        .card {
-            width: 100%;
-            background: var(--card-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-card);
-            box-shadow: var(--card-shadow);
-            padding: 26px 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-        }
-
-        .step-card {
-            display: none;
-            align-items: center;
-            text-align: center;
-        }
-
-        .step-card.active {
-            display: flex;
-            animation: cardAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        @keyframes cardAppear {
-            from {
-                opacity: 0;
-                transform: translateY(14px) scale(0.97);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .hero-icon-container {
-            position: relative;
-            width: 76px;
-            height: 76px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .floating-hero-emoji {
-            font-size: 46px;
-            z-index: 2;
-            animation: floatEmoji 3s ease-in-out infinite;
-        }
-
-        .glow-orb {
-            position: absolute;
-            width: 68px;
-            height: 68px;
-            background: radial-gradient(circle, rgba(255, 51, 119, 0.5) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(12px);
-            z-index: 1;
-            animation: pulseOrb 2.5s ease-in-out infinite;
-        }
-
-        @keyframes floatEmoji {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-7px) rotate(4deg); }
-        }
-
-        @keyframes pulseOrb {
-            0%, 100% { transform: scale(1); opacity: 0.6; }
-            50% { transform: scale(1.25); opacity: 0.9; }
-        }
-
-        .step-badge-tag {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #ff758c;
-            background: rgba(255, 51, 119, 0.12);
-            border: 1px solid rgba(255, 51, 119, 0.25);
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-bottom: 10px;
-        }
-
-        .step-badge-tag.success-tag {
-            color: #4ade80;
-            background: rgba(74, 222, 128, 0.12);
-            border-color: rgba(74, 222, 128, 0.3);
-        }
-
-        .step-badge-tag.gold-tag {
-            color: var(--accent-gold);
-            background: rgba(251, 191, 36, 0.12);
-            border-color: rgba(251, 191, 36, 0.3);
-        }
-
-        .main-title {
-            font-size: 24px;
-            font-weight: 800;
-            line-height: 1.25;
-            margin-bottom: 10px;
-            letter-spacing: -0.4px;
-            color: #ffffff;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .step-title {
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 6px;
-            letter-spacing: -0.3px;
-            color: #ffffff;
-        }
-
-        .step-desc, .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 20px;
-            max-width: 320px;
-        }
-
-        .heart-pulse {
-            display: inline-block;
-            animation: heartBeat 1.4s infinite;
-        }
-
-        @keyframes heartBeat {
-            0%, 100% { transform: scale(1); }
-            15% { transform: scale(1.22); }
-            30% { transform: scale(1); }
-            45% { transform: scale(1.12); }
-        }
-
-        .actions-group {
-            display: flex;
-            gap: 14px;
-            width: 100%;
-            min-height: 56px;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            margin-top: 8px;
-        }
-
-        .btn {
-            font-size: 15px;
-            font-weight: 700;
-            padding: 13px 24px;
-            border-radius: var(--radius-btn);
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: var(--primary-gradient);
-            color: #ffffff;
-            box-shadow: 0 8px 20px var(--primary-glow);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: var(--primary-gradient-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 26px rgba(255, 51, 119, 0.6);
-        }
-
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(1px);
-        }
-
-        .btn-primary:disabled {
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.3);
-            box-shadow: none;
-            cursor: not-allowed;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .btn-secondary {
-            background: var(--secondary-glass);
-            color: var(--text-primary);
-            border: 1px solid var(--secondary-border);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.16);
-            transform: translateY(-1px);
-        }
-
-        .pulse-btn {
-            animation: subtlePulse 2s infinite;
-        }
-
-        @keyframes subtlePulse {
-            0%, 100% { box-shadow: 0 8px 20px var(--primary-glow); }
-            50% { box-shadow: 0 10px 30px rgba(255, 51, 119, 0.7); }
-        }
-
-        .no-btn {
-            transition: left 0.2s ease, top 0.2s ease, transform 0.15s ease;
-            z-index: 10;
-        }
-
-        .next-btn {
-            width: 100%;
-            margin-top: 20px;
-            padding: 15px;
-            font-size: 16px;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 100%;
-        }
-
-        .option-card {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            border-radius: 16px;
-            padding: 16px 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
-            user-select: none;
-        }
-
-        .option-card:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
-        }
-
-        .option-card.selected {
-            background: linear-gradient(145deg, rgba(255, 51, 119, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
-            border-color: #ff4b82;
-            transform: scale(1.02);
-            box-shadow: 0 6px 20px rgba(255, 51, 119, 0.3);
-        }
-
-        .option-icon {
-            font-size: 30px;
-            line-height: 1;
-            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
-            transition: transform 0.2s ease;
-        }
-
-        .option-card:hover .option-icon,
-        .option-card.selected .option-icon {
-            transform: scale(1.14);
-        }
-
-        .option-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text-primary);
-            text-align: center;
-            line-height: 1.3;
-        }
-
-        .quick-chips-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
-            margin-bottom: 18px;
-        }
-
-        .chip-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: var(--radius-chip);
-            padding: 7px 12px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .chip-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-        }
-
-        .chip-btn.active {
-            background: var(--primary-gradient);
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 6px;
-            width: 100%;
-            margin-bottom: 14px;
-        }
-
-        .date-time-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .input-group label {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input[type="text"],
-        input[type="date"],
-        input[type="time"] {
-            width: 100%;
-            padding: 12px 14px;
-            font-size: 14px;
-            font-weight: 600;
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1.5px solid rgba(255, 255, 255, 0.15);
-            border-radius: var(--radius-input);
-            outline: none;
-            transition: all 0.22s ease;
-        }
-
-        input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.35);
-        }
-
-        input:focus {
-            border-color: #ff4b82;
-            background: rgba(255, 255, 255, 0.14);
-            box-shadow: 0 0 15px rgba(255, 51, 119, 0.3);
-        }
-
-        input[type="date"]::-webkit-calendar-picker-indicator,
-        input[type="time"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-
-        /* VIP Ticket */
-        .dating-ticket {
-            width: 100%;
-            background: linear-gradient(145deg, rgba(38, 16, 52, 0.95) 0%, rgba(20, 9, 30, 0.95) 100%);
-            border: 1px solid rgba(255, 215, 0, 0.35);
-            border-radius: 20px;
-            padding: 20px;
-            margin: 14px 0 20px;
-            position: relative;
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), inset 0 0 20px rgba(255, 215, 0, 0.06);
-        }
-
-        .ticket-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .ticket-brand {
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            color: var(--accent-gold);
-            text-shadow: 0 0 10px rgba(255, 209, 102, 0.4);
-        }
-
-        .ticket-status {
-            font-size: 10px;
-            font-weight: 800;
-            padding: 3px 8px;
-            background: rgba(74, 222, 128, 0.2);
-            color: #4ade80;
-            border: 1px solid rgba(74, 222, 128, 0.4);
-            border-radius: 8px;
-            letter-spacing: 1px;
-        }
-
-        .ticket-body {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            text-align: left;
-        }
-
-        .ticket-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .ticket-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .ticket-item.full {
-            grid-column: 1 / -1;
-        }
-
-        .ticket-item-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-muted);
-        }
-
-        .ticket-item-val {
-            font-size: 14px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .ticket-divider {
-            position: relative;
-            margin: 16px -20px 12px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-        }
-
-        .cutout-left, .cutout-right {
-            width: 16px;
-            height: 16px;
-            background-color: #0d0517;
-            border-radius: 50%;
-            position: absolute;
-        }
-
-        .cutout-left { left: -8px; }
-        .cutout-right { right: -8px; }
-
-        .dash-line {
-            width: 100%;
-            border-top: 2px dashed rgba(255, 255, 255, 0.2);
-            margin: 0 16px;
-        }
-
-        .ticket-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 4px;
-        }
-
-        .ticket-barcode {
-            font-family: monospace;
-            font-size: 15px;
-            letter-spacing: 3px;
-            color: rgba(255, 255, 255, 0.35);
-        }
-
-        .ticket-heart {
-            font-size: 20px;
-            animation: heartBeat 1.4s infinite;
-        }
-
-        .ticket-actions {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        /* Constructor Specific */
-        #constructorView {
-            display: none;
-            width: 100%;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        #constructorView.active {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        #guestView {
-            display: none;
-            width: 100%;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #guestView.active {
-            display: flex;
-        }
-
-        .constructor-header {
-            text-align: center;
-            padding: 6px 0 14px;
-        }
-
-        .constructor-section-title {
-            font-size: 15px;
-            font-weight: 800;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        .constructor-section-title .section-num {
-            background: var(--primary-gradient);
-            color: #fff;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-        }
-
-        .builder-chips-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .builder-chip {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1.5px solid rgba(255, 255, 255, 0.12);
-            border-radius: 14px;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
-        }
-
-        .builder-chip:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-
-        .builder-chip.enabled {
-            background: rgba(255, 51, 119, 0.18);
-            border-color: rgba(255, 51, 119, 0.5);
-        }
-
-        .builder-chip .chip-checkbox {
-            width: 18px;
-            height: 18px;
-            border-radius: 6px;
-            border: 1.5px solid rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: all 0.2s ease;
-        }
-
-        .builder-chip.enabled .chip-checkbox {
-            background: #ff3377;
-            border-color: #ff3377;
-            color: #fff;
-        }
-
-        .builder-chip .chip-icon {
-            font-size: 18px;
-        }
-
-        .builder-chip .chip-text {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .add-custom-row {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            margin-top: 4px;
-        }
-
-        .add-custom-row input {
-            flex: 1;
-            padding: 10px 12px;
-            font-size: 13px;
-        }
-
-        .add-btn {
-            padding: 10px 16px;
-            font-size: 13px;
-            border-radius: var(--radius-input);
-            white-space: nowrap;
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(10, 4, 18, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 16px;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: var(--radius-card);
-            box-shadow: var(--card-shadow);
-            padding: 28px 20px;
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-        }
-
-        .share-link-box {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1.5px dashed rgba(255, 51, 119, 0.4);
-            border-radius: 14px;
-            padding: 12px;
-            margin: 16px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .share-link-text {
-            font-family: monospace;
-            font-size: 13px;
-            color: #ff8ea3;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            text-align: left;
-        }
-
-        .copy-mini-btn {
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #fff;
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-        }
-
-        .copy-mini-btn:hover {
-            background: rgba(255, 255, 255, 0.22);
-        }
-
-        .modal-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .close-modal-btn {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: var(--text-muted);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.2s ease;
-        }
-
-        .close-modal-btn:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .toast-msg {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(50px);
-            background: rgba(20, 10, 30, 0.95);
-            border: 1px solid #4ade80;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 999;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .toast-msg.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        @media (max-width: 420px) {
-            .card { padding: 22px 16px; border-radius: 22px; }
-            .main-title { font-size: 21px; }
-            .step-title { font-size: 19px; }
-            .options-grid { gap: 8px; }
-            .option-card { padding: 13px 8px; }
-            .option-icon { font-size: 26px; }
-            .option-label { font-size: 12px; }
-            .btn { padding: 12px 18px; font-size: 14px; }
-            .builder-chips-grid { grid-template-columns: 1fr; }
-        }
+/* ==========================================================================
+   Svidanka 2.0 — Romantic Neo-Glassmorphism Design System & Themes
+   ========================================================================== */
+
+:root {
+    /* Default Theme: Sakura Rose */
+    --primary-gradient: linear-gradient(135deg, #ff3377 0%, #ff6584 50%, #ff8ea3 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #ff1a66 0%, #ff4d73 50%, #ff7593 100%);
+    --accent-gradient: linear-gradient(135deg, #a855f7 0%, #d946ef 50%, #ec4899 100%);
+    --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    
+    --primary-glow: rgba(255, 51, 119, 0.45);
+    --accent-glow: rgba(168, 85, 247, 0.4);
+    
+    --secondary-glass: rgba(255, 255, 255, 0.08);
+    --secondary-border: rgba(255, 255, 255, 0.16);
+    
+    --card-bg: rgba(24, 12, 36, 0.82);
+    --card-border: rgba(255, 255, 255, 0.14);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 35px rgba(255, 51, 119, 0.12);
+    
+    --body-bg-gradient: 
+        radial-gradient(circle at 15% 15%, rgba(255, 51, 119, 0.24) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(138, 43, 226, 0.24) 0%, transparent 50%),
+        linear-gradient(160deg, #180927 0%, #0d0517 100%);
+    --body-bg-color: #0d0517;
+
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.84);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --accent-gold: #ffd166;
+    --accent-green: #4ade80;
+    
+    --radius-card: 26px;
+    --radius-btn: 18px;
+    --radius-input: 16px;
+    --radius-chip: 12px;
+}
+
+/* ==========================================================================
+   THEME 2: Midnight Starlight (Звёздная Ночь)
+   ========================================================================== */
+body[data-theme="midnight"] {
+    --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #c026d3 100%);
+    --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
+    --primary-glow: rgba(139, 92, 246, 0.45);
+    --accent-glow: rgba(59, 130, 246, 0.4);
+    --card-bg: rgba(10, 15, 36, 0.85);
+    --card-border: rgba(139, 92, 246, 0.2);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(59, 130, 246, 0.15);
+    --body-bg-gradient: 
+        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+        linear-gradient(160deg, #070c20 0%, #030611 100%);
+    --body-bg-color: #030611;
+}
+
+/* ==========================================================================
+   THEME 3: Warm Sunset & Candlelight (Уютный Закат)
+   ========================================================================== */
+body[data-theme="sunset"] {
+    --primary-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #d97706 0%, #ea580c 50%, #dc2626 100%);
+    --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #f97316 100%);
+    --primary-glow: rgba(249, 115, 22, 0.45);
+    --accent-glow: rgba(245, 158, 11, 0.4);
+    --card-bg: rgba(30, 15, 10, 0.85);
+    --card-border: rgba(249, 115, 22, 0.2);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(249, 115, 22, 0.15);
+    --body-bg-gradient: 
+        radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.22) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.2) 0%, transparent 50%),
+        linear-gradient(160deg, #1c0d08 0%, #0d0604 100%);
+    --body-bg-color: #0d0604;
+}
+
+/* ==========================================================================
+   THEME 4: Emerald VIP Luxury (Изумрудный Люкс)
+   ========================================================================== */
+body[data-theme="emerald"] {
+    --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+    --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #10b981 100%);
+    --primary-glow: rgba(16, 185, 129, 0.45);
+    --accent-glow: rgba(251, 191, 36, 0.4);
+    --card-bg: rgba(6, 26, 20, 0.85);
+    --card-border: rgba(16, 185, 129, 0.22);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(16, 185, 129, 0.15);
+    --body-bg-gradient: 
+        radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(251, 191, 36, 0.15) 0%, transparent 50%),
+        linear-gradient(160deg, #051a14 0%, #020d0a 100%);
+    --body-bg-color: #020d0a;
+}
+
+/* ==========================================================================
+   THEME 5: Sweet Berry Velvet (Клубничный Бархат)
+   ========================================================================== */
+body[data-theme="berry"] {
+    --primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9f1239 100%);
+    --primary-gradient-hover: linear-gradient(135deg, #be123c 0%, #9f1239 50%, #881337 100%);
+    --accent-gradient: linear-gradient(135deg, #fda4af 0%, #f43f5e 50%, #e11d48 100%);
+    --primary-glow: rgba(225, 29, 72, 0.45);
+    --accent-glow: rgba(244, 63, 94, 0.4);
+    --card-bg: rgba(30, 8, 16, 0.85);
+    --card-border: rgba(225, 29, 72, 0.22);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(225, 29, 72, 0.15);
+    --body-bg-gradient: 
+        radial-gradient(circle at 20% 20%, rgba(225, 29, 72, 0.24) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.2) 0%, transparent 50%),
+        linear-gradient(160deg, #200611 0%, #0f0308 100%);
+    --body-bg-color: #0f0308;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+html, body {
+    width: 100%;
+    min-height: 100%;
+    background-color: var(--body-bg-color);
+    background-image: var(--body-bg-gradient);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px 12px 32px;
+    transition: background 0.5s ease;
+}
+
+#particleCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.app-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Top App Bar */
+.top-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 4px;
+}
+
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ff8ea3;
+    background: rgba(255, 51, 119, 0.12);
+    border: 1px solid rgba(255, 51, 119, 0.25);
+    padding: 5px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.mode-toggle-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--secondary-border);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.mode-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* Stepper Header for Guest Flow */
+.stepper-header {
+    width: 100%;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stepper-header.visible {
+    display: flex;
+    opacity: 1;
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--secondary-border);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.back-btn:active {
+    transform: scale(0.95);
+}
+
+.stepper-dots {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dot.active {
+    width: 22px;
+    border-radius: 12px;
+    background: var(--primary-gradient);
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.step-indicator-badge {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+/* Glass Card */
+.card {
+    width: 100%;
+    background: var(--card-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--card-shadow);
+    padding: 26px 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+}
+
+/* Ultra-Smooth Guest Step Transitions */
+.step-card {
+    display: none;
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+    filter: blur(4px);
+    transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.3, 1),
+                transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1),
+                filter 0.3s ease;
+    align-items: center;
+    text-align: center;
+}
+
+.step-card.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+}
+
+/* Views (Constructor & Guest) */
+#constructorView, #guestView {
+    width: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.3, 1),
+                transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+#constructorView.active, #guestView.active {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Hero Elements */
+.hero-icon-container {
+    position: relative;
+    width: 76px;
+    height: 76px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-hero-emoji {
+    font-size: 46px;
+    z-index: 2;
+    animation: floatEmoji 3s ease-in-out infinite;
+}
+
+.glow-orb {
+    position: absolute;
+    width: 68px;
+    height: 68px;
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(12px);
+    z-index: 1;
+    animation: pulseOrb 2.5s ease-in-out infinite;
+}
+
+@keyframes floatEmoji {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-7px) rotate(4deg); }
+}
+
+@keyframes pulseOrb {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.25); opacity: 0.9; }
+}
+
+.step-badge-tag {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ff758c;
+    background: rgba(255, 51, 119, 0.12);
+    border: 1px solid rgba(255, 51, 119, 0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.step-badge-tag.success-tag {
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.12);
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.step-badge-tag.gold-tag {
+    color: var(--accent-gold);
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.main-title {
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin-bottom: 10px;
+    letter-spacing: -0.4px;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.step-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+    color: #ffffff;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+    margin-bottom: 24px;
+}
+
+.step-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+}
+
+/* Theme Picker Grid */
+.theme-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.theme-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    user-select: none;
+}
+
+.theme-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.theme-card.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--accent-gold);
+    transform: scale(1.04);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.theme-preview-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.theme-card-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* Buttons */
+.actions-group {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-top: 8px;
+}
+
+.btn {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 24px;
+    border-radius: var(--radius-btn);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: #ffffff;
+    box-shadow: 0 8px 20px var(--primary-glow);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-gradient-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 26px var(--primary-glow);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn-primary:disabled {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.3);
+    box-shadow: none;
+    cursor: not-allowed;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-secondary {
+    background: var(--secondary-glass);
+    color: var(--text-primary);
+    border: 1px solid var(--secondary-border);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+.btn-accent {
+    background: var(--accent-gradient);
+    color: #fff;
+    box-shadow: 0 8px 20px var(--accent-glow);
+}
+
+.pulse-btn {
+    animation: subtlePulse 2s infinite;
+}
+
+@keyframes subtlePulse {
+    0%, 100% { box-shadow: 0 8px 20px var(--primary-glow); }
+    50% { box-shadow: 0 10px 30px var(--primary-glow); }
+}
+
+/* Escaping No-Button with Strict Viewport Boundaries */
+.no-btn {
+    transition: left 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                top 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.2s ease;
+    will-change: left, top;
+    z-index: 999;
+}
+
+.next-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+    font-size: 16px;
+}
+
+/* Options Grid for Guest & Selection */
+.options-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+
+.option-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 16px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+}
+
+.option-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.option-card.selected {
+    background: linear-gradient(145deg, rgba(255, 51, 119, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
+    border-color: #ff4b82;
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px var(--primary-glow);
+}
+
+.option-icon {
+    font-size: 30px;
+    line-height: 1;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+    transition: transform 0.2s ease;
+}
+
+.option-card.selected .option-icon {
+    transform: scale(1.15);
+}
+
+.option-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* Date Presets */
+.quick-chips-wrapper {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+}
+
+.quick-chips-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.chip-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--secondary-border);
+    color: var(--text-secondary);
+    padding: 8px 14px;
+    border-radius: var(--radius-chip);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+}
+
+.chip-btn.active {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+/* Inputs & Datepicker */
+.date-time-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.input-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-input);
+    padding: 12px 14px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+textarea:focus {
+    border-color: #ff4b82;
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 14px var(--primary-glow);
+}
+
+textarea {
+    resize: none;
+}
+
+/* VIP Date Ticket */
+.ticket-wrapper {
+    width: 100%;
+    margin: 16px 0;
+    filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.5));
+}
+
+.vip-ticket {
+    background: linear-gradient(135deg, rgba(35, 18, 50, 0.95) 0%, rgba(20, 10, 32, 0.95) 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 20px 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.vip-ticket::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+}
+
+.ticket-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+}
+
+.ticket-badge {
+    background: rgba(251, 191, 36, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    color: var(--accent-gold);
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+.ticket-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+}
+
+.ticket-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.ticket-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.ticket-val {
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+/* Constructor Specific Styles */
+.constructor-header {
+    text-align: center;
+    align-items: center;
+}
+
+.constructor-section-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+}
+
+.section-num {
+    background: var(--primary-gradient);
+    color: #fff;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.builder-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.builder-chip {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.builder-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.builder-chip.enabled {
+    background: rgba(255, 51, 119, 0.18);
+    border-color: rgba(255, 51, 119, 0.5);
+}
+
+.builder-chip .chip-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.builder-chip.enabled .chip-checkbox {
+    background: #ff3377;
+    border-color: #ff3377;
+    color: #fff;
+}
+
+.builder-chip .chip-icon {
+    font-size: 18px;
+}
+
+.builder-chip .chip-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.add-custom-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.add-custom-row input {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 13px;
+}
+
+.add-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+    border-radius: var(--radius-input);
+    white-space: nowrap;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 4, 18, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-overlay.active {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--card-shadow);
+    padding: 28px 20px;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.share-link-box {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px dashed rgba(255, 51, 119, 0.4);
+    border-radius: 14px;
+    padding: 12px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.share-link-text {
+    font-family: monospace;
+    font-size: 13px;
+    color: #ff8ea3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
+}
+
+.copy-mini-btn {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.copy-mini-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.close-modal-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.toast-msg {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(50px);
+    background: rgba(20, 10, 30, 0.95);
+    border: 1px solid #4ade80;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-msg.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+@media (max-width: 420px) {
+    .card { padding: 22px 16px; border-radius: 22px; }
+    .main-title { font-size: 21px; }
+    .step-title { font-size: 19px; }
+    .options-grid { gap: 8px; }
+    .option-card { padding: 13px 8px; }
+    .option-icon { font-size: 26px; }
+    .option-label { font-size: 12px; }
+    .btn { padding: 12px 18px; font-size: 14px; }
+    .builder-chips-grid { grid-template-columns: 1fr; }
+}
+
     </style>
 </head>
 
@@ -1021,7 +1118,19 @@
                 </div>
             </div>
 
-            <!-- Section 2: Еда -->
+            <!-- Section 2: Тема оформления -->
+            <div class="card">
+                <div class="constructor-section-title">
+                    <span class="section-num">🎨</span>
+                    <span>Стиль оформления свидания</span>
+                </div>
+                <p class="step-desc" style="font-size: 13px; margin-bottom: 12px;">Выберите индивидуальную атмосферу и цветовую гамму:</p>
+                <div class="theme-picker-grid" id="themePickerGrid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- Section 3: Еда -->
             <div class="card">
                 <div class="constructor-section-title">
                     <span class="section-num">2</span>
@@ -1037,7 +1146,7 @@
                 </div>
             </div>
 
-            <!-- Section 3: Досуг -->
+            <!-- Section 4: Досуг -->
             <div class="card">
                 <div class="constructor-section-title">
                     <span class="section-num">3</span>
@@ -1148,103 +1257,89 @@
                     </div>
                 </div>
 
-                <div class="input-group" style="width: 100%;">
-                    <label for="notesInput">💬 Пожелания (по желанию)</label>
-                    <input type="text" id="notesInput" placeholder="Например: хочу столик у окна ✨" maxlength="100">
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label for="notesInput">💬 Особые пожелания или намёк (необязательно)</label>
+                    <textarea id="notesInput" rows="2" placeholder="Например: хочу платье, столик у окна, или сюрприз... ✨" maxlength="120"></textarea>
                 </div>
 
-                <button id="finishBtn" class="btn btn-primary next-btn" disabled type="button">Забронировать билет 🎟️</button>
+                <button id="finishBtn" class="btn btn-primary next-btn pulse-btn" disabled type="button">Забронировать билет 🎟️</button>
             </div>
 
             <!-- STEP 5: Ticket & Confirmation -->
             <div id="step5" class="card step-card">
-                <div class="step-badge-tag success-tag">Свидание подтверждено! 🎉</div>
-                <h2 class="step-title" style="text-shadow: 0 0 20px rgba(255, 51, 119, 0.6);">Ура! Жду встречи! 🥰❤️</h2>
-                <p class="step-desc">Твой персональный билет на идеальный вечер:</p>
+                <div class="step-badge-tag success-tag">Свидание подтверждено! ✨</div>
+                <h2 class="step-title">Ура! Мы идём на свидание! 🥰</h2>
+                <p class="step-desc">Твой персональный билет сохранён и готов</p>
 
-                <div class="dating-ticket">
-                    <div class="ticket-header">
-                        <span class="ticket-brand">DATE PASS 💖</span>
-                        <span class="ticket-status">CONFIRMED</span>
-                    </div>
-                    <div class="ticket-body">
-                        <div class="ticket-row">
-                            <div class="ticket-item">
-                                <span class="ticket-item-label">🍽️ Еда:</span>
-                                <span class="ticket-item-val" id="summaryFood">—</span>
+                <div class="ticket-wrapper">
+                    <div class="vip-ticket">
+                        <div class="ticket-header">
+                            <span class="ticket-title">VIP DATE TICKET 💖</span>
+                            <span class="ticket-badge">CONFIRMED</span>
+                        </div>
+                        <div class="ticket-body">
+                            <div class="ticket-row">
+                                <span class="ticket-label">🍽️ Меню:</span>
+                                <span class="ticket-val" id="summaryFood">Суши & Роллы 🍣</span>
                             </div>
-                            <div class="ticket-item">
-                                <span class="ticket-item-label">🎭 План:</span>
-                                <span class="ticket-item-val" id="summaryActivity">—</span>
+                            <div class="ticket-row">
+                                <span class="ticket-label">🎭 План:</span>
+                                <span class="ticket-val" id="summaryActivity">Кино или фильм 🍿</span>
+                            </div>
+                            <div class="ticket-row">
+                                <span class="ticket-label">📅 Дата:</span>
+                                <span class="ticket-val" id="summaryDate">Пятница, 20 августа</span>
+                            </div>
+                            <div class="ticket-row">
+                                <span class="ticket-label">⏰ Время:</span>
+                                <span class="ticket-val" id="summaryTime">19:00</span>
+                            </div>
+                            <div class="ticket-row" id="summaryNoteRow" style="display: none;">
+                                <span class="ticket-label">💬 Пожелание:</span>
+                                <span class="ticket-val" id="summaryNote">-</span>
                             </div>
                         </div>
-                        <div class="ticket-row">
-                            <div class="ticket-item">
-                                <span class="ticket-item-label">📅 Дата:</span>
-                                <span class="ticket-item-val" id="summaryDate">—</span>
-                            </div>
-                            <div class="ticket-item">
-                                <span class="ticket-item-label">⏰ Время:</span>
-                                <span class="ticket-item-val" id="summaryTime">—</span>
-                            </div>
-                        </div>
-                        <div class="ticket-row" id="summaryNoteRow" style="display: none;">
-                            <div class="ticket-item full">
-                                <span class="ticket-item-label">💬 Пожелание:</span>
-                                <span class="ticket-item-val" id="summaryNote">—</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ticket-divider">
-                        <div class="cutout-left"></div>
-                        <div class="dash-line"></div>
-                        <div class="cutout-right"></div>
-                    </div>
-                    <div class="ticket-footer">
-                        <div class="ticket-barcode">||| | |||| | || ||||| ||| | |||</div>
-                        <span class="ticket-heart">❤️</span>
                     </div>
                 </div>
 
-                <div class="ticket-actions">
-                    <button id="sendTgBtn" class="btn btn-primary pulse-btn" type="button">Отправить в чат 💌</button>
+                <div class="modal-actions">
+                    <button id="sendTgBtn" class="btn btn-primary pulse-btn" style="width: 100%; padding: 15px; font-size: 15px;" type="button">
+                        💌 Отправить подтверждение в Telegram
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===================================================================
-         SHARE & SUCCESS MODAL
-         =================================================================== -->
-    <div id="shareModal" class="modal-overlay">
+    <!-- Share Modal Dialog -->
+    <div class="modal-overlay" id="shareModal">
         <div class="modal-content">
-            <button id="closeModalBtn" class="close-modal-btn" type="button">✕</button>
-            <div class="hero-icon-container" style="margin: 0 auto 10px;">
+            <button class="close-modal-btn" id="closeModalBtn" aria-label="Закрыть" type="button">✕</button>
+            <div class="hero-icon-container" style="margin-bottom: 8px;">
                 <span class="floating-hero-emoji">💌</span>
                 <div class="glow-orb"></div>
             </div>
             <div class="step-badge-tag success-tag">Приглашение готово! 🎉</div>
             <h2 class="step-title" style="font-size: 20px;">Отправь ссылку половинке</h2>
-            <p class="step-desc" style="margin-bottom: 8px;">
-                Как только она выберет варианты и подтвердит свидание, ответ сразу придёт тебе в Telegram!
-            </p>
+            <p class="step-desc" style="font-size: 13px; margin-bottom: 12px;">Открой в Telegram или скопируй прямую ссылку:</p>
 
             <div class="share-link-box">
-                <span id="shareLinkText" class="share-link-text">https://t.me/...</span>
-                <button id="copyLinkBtn" class="copy-mini-btn" type="button">Скопировать</button>
+                <span class="share-link-text" id="shareLinkText">https://...</span>
+                <button class="copy-mini-btn" id="copyLinkBtn" type="button">Скопировать</button>
             </div>
 
             <div class="modal-actions">
-                <button id="shareInTgBtn" class="btn btn-primary" type="button">
+                <button id="shareInTgBtn" class="btn btn-primary" style="width: 100%;" type="button">
                     💌 Отправить в Telegram
                 </button>
-                <button id="testInviteBtn" class="btn btn-secondary" type="button">
+                <button id="testInviteBtn" class="btn btn-secondary" style="width: 100%;" type="button">
                     👁️ Посмотреть как гость
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- JavaScript Application Logic -->
     <script>
 document.addEventListener('DOMContentLoaded', () => {
     const BOT_TOKEN = '8746874049:AAFwIe93f_lrc3_uH5RrqE5PwqxKW4X33y0';
@@ -1274,7 +1369,40 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
     };
 
-    // --- 2. Base64 UTF-8 State Encoder / Decoder ---
+    // --- 2. Themes Definition & Switcher ---
+    const THEMES = [
+        { id: 'sakura', name: '🌸 Нежность', color: 'linear-gradient(135deg, #ff3377, #ff8ea3)', particles: ['💖', '💕', '✨', '🌸', '❤️'] },
+        { id: 'midnight', name: '🌌 Ночь', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', particles: ['🌟', '✨', '🌙', '🪐', '💫'] },
+        { id: 'sunset', name: '🕯️ Закат', color: 'linear-gradient(135deg, #f59e0b, #ef4444)', particles: ['🕯️', '✨', '🍷', '🍂', '🧡'] },
+        { id: 'emerald', name: '💎 Люкс', color: 'linear-gradient(135deg, #10b981, #fbbf24)', particles: ['💎', '👑', '✨', '🥂', '🌿'] },
+        { id: 'berry', name: '🍓 Бархат', color: 'linear-gradient(135deg, #e11d48, #fda4af)', particles: ['🍓', '❤️', '🍫', '💋', '✨'] }
+    ];
+
+    let currentActiveTheme = 'sakura';
+    let currentThemeParticles = THEMES[0].particles;
+
+    const applyTheme = (themeId) => {
+        const found = THEMES.find(t => t.id === themeId) || THEMES[0];
+        currentActiveTheme = found.id;
+        currentThemeParticles = found.particles;
+
+        if (found.id === 'sakura') {
+            document.body.removeAttribute('data-theme');
+        } else {
+            document.body.setAttribute('data-theme', found.id);
+        }
+
+        // Update Theme picker UI if present
+        document.querySelectorAll('.theme-card').forEach(card => {
+            if (card.getAttribute('data-theme-id') === found.id) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        });
+    };
+
+    // --- 3. Base64 UTF-8 State Encoder / Decoder ---
     const encodeInviteState = (obj) => {
         try {
             const json = JSON.stringify(obj);
@@ -1311,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 3. Ambient Particle Canvas Engine ---
+    // --- 4. Ambient Particle Canvas Engine ---
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas ? canvas.getContext('2d') : null;
     let particles = [];
@@ -1324,18 +1452,16 @@ document.addEventListener('DOMContentLoaded', () => {
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        const heartSymbols = ['💖', '💕', '✨', '🌸', '✨', '❤️'];
-
         class Particle {
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = canvas.height + Math.random() * 50;
                 this.size = Math.random() * 15 + 10;
-                this.speedY = Math.random() * 1.1 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.7;
+                this.speedY = Math.random() * 1.0 + 0.4;
+                this.speedX = (Math.random() - 0.5) * 0.6;
                 this.opacity = Math.random() * 0.55 + 0.2;
-                this.char = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                this.char = currentThemeParticles[Math.floor(Math.random() * currentThemeParticles.length)];
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.02;
             }
@@ -1382,7 +1508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         animateParticles();
     }
 
-    // --- 4. Confetti Animation Engine ---
+    // --- 5. Confetti Animation Engine ---
     const fireConfetti = () => {
         const confCanvas = document.createElement('canvas');
         confCanvas.style.position = 'fixed';
@@ -1447,7 +1573,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderConfetti();
     };
 
-    // --- 5. Toast Notification Helper ---
+    // --- 6. Toast Notification Helper ---
     const showToast = (text, duration = 2500) => {
         let toast = document.getElementById('toastMsg');
         if (!toast) {
@@ -1461,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => toast.classList.remove('show'), duration);
     };
 
-    // --- 6. Application State & Presets ---
+    // --- 7. Application State & Presets ---
     const DEFAULT_FOOD = [
         { id: 'sushi', label: 'Суши & Роллы', icon: '🍣', enabled: true },
         { id: 'pizza', label: 'Итальянская пицца', icon: '🍕', enabled: true },
@@ -1492,6 +1618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         creatorName: '',
         currentInviteId: null,
         loadedInvite: null,
+        selectedTheme: 'sakura',
         builder: {
             targetName: '',
             question: 'Пойдёшь со мной на свидание?',
@@ -1509,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 7. Comprehensive URL & Telegram Param Extraction ---
+    // --- 8. Comprehensive URL & Telegram Param Extraction ---
     const extractUrlParams = () => {
         let fullQuery = window.location.search || '';
         let hash = window.location.hash || '';
@@ -1577,7 +1704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.creatorName = urlParams.get('creator_name') || '';
     }
 
-    // --- 8. DOM Elements ---
+    // --- 9. DOM Elements ---
     const constructorView = document.getElementById('constructorView');
     const guestView = document.getElementById('guestView');
     const modeToggleBtn = document.getElementById('modeToggleBtn');
@@ -1594,18 +1721,39 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('step5')
     ];
 
-    // --- 9. Switch Views (Constructor vs Guest) ---
+    // --- 10. Switch Views (Constructor vs Guest) with Smooth Blur Dissolve ---
     const switchMode = (mode) => {
         appState.mode = mode;
         if (mode === 'constructor') {
-            constructorView.classList.add('active');
-            guestView.classList.remove('active');
+            if (guestView) {
+                guestView.style.opacity = '0';
+                guestView.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    guestView.classList.remove('active');
+                    constructorView.classList.add('active');
+                    setTimeout(() => {
+                        constructorView.style.opacity = '1';
+                        constructorView.style.transform = 'translateY(0)';
+                    }, 20);
+                }, 180);
+            }
             stepperHeader.classList.remove('visible');
             modeToggleBtn.innerHTML = '👁️ Тест гостя';
             renderBuilderChips();
+            renderThemePicker();
         } else {
-            constructorView.classList.remove('active');
-            guestView.classList.add('active');
+            if (constructorView) {
+                constructorView.style.opacity = '0';
+                constructorView.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    constructorView.classList.remove('active');
+                    guestView.classList.add('active');
+                    setTimeout(() => {
+                        guestView.style.opacity = '1';
+                        guestView.style.transform = 'translateY(0)';
+                    }, 20);
+                }, 180);
+            }
             modeToggleBtn.innerHTML = '🛠 Конструктор';
             updateGuestStep(1);
         }
@@ -1622,7 +1770,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 10. Constructor: Render & Manage Chips ---
+    // --- 11. Theme Picker UI Rendering ---
+    const themePickerGrid = document.getElementById('themePickerGrid');
+
+    const renderThemePicker = () => {
+        if (!themePickerGrid) return;
+        themePickerGrid.innerHTML = '';
+        THEMES.forEach(t => {
+            const card = document.createElement('div');
+            card.className = `theme-card ${t.id === appState.selectedTheme ? 'active' : ''}`;
+            card.setAttribute('data-theme-id', t.id);
+            card.innerHTML = `
+                <div class="theme-preview-dot" style="background: ${t.color};"></div>
+                <span class="theme-card-name">${t.name}</span>
+            `;
+            card.addEventListener('click', () => {
+                triggerHaptic('light');
+                appState.selectedTheme = t.id;
+                applyTheme(t.id);
+                showToast(`Стиль «${t.name}» выбран! ✨`);
+            });
+            themePickerGrid.appendChild(card);
+        });
+    };
+
+    // --- 12. Constructor: Render & Manage Chips ---
     const builderFoodChips = document.getElementById('builderFoodChips');
     const builderActivityChips = document.getElementById('builderActivityChips');
 
@@ -1705,7 +1877,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 11. Constructor: Generate Invite & Show Share Modal ---
+    // --- 13. Constructor: Generate Invite & Show Share Modal ---
     const generateInviteBtn = document.getElementById('generateInviteBtn');
     const shareModal = document.getElementById('shareModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
@@ -1715,6 +1887,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const testInviteBtn = document.getElementById('testInviteBtn');
 
     let currentGeneratedUrl = '';
+    let currentGeneratedBotUrl = '';
+    let currentGeneratedWebUrl = '';
 
     if (generateInviteBtn) {
         generateInviteBtn.addEventListener('click', async () => {
@@ -1747,7 +1921,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 f: enabledFood.map(item => ({ l: item.label, i: item.icon })),
                 a: enabledActivity.map(item => ({ l: item.label, i: item.icon })),
                 c: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
-                n: appState.creatorName || ''
+                n: appState.creatorName || '',
+                th: appState.selectedTheme || 'sakura'
             };
 
             const encoded = encodeInviteState(compactState);
@@ -1770,7 +1945,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 question,
                 subtitle,
                 foodOptions: enabledFood,
-                activityOptions: enabledActivity
+                activityOptions: enabledActivity,
+                theme: appState.selectedTheme || 'sakura'
             };
 
             appState.loadedInvite = { id: 'd_' + encoded, ...payload };
@@ -1796,9 +1972,6 @@ document.addEventListener('DOMContentLoaded', () => {
             fireConfetti();
         });
     }
-
-    let currentGeneratedBotUrl = '';
-    let currentGeneratedWebUrl = '';
 
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', () => {
@@ -1842,16 +2015,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 12. Guest Flow Stepper ---
+    // --- 14. Guest Flow Stepper with Ultra-Smooth Transitions ---
     const updateGuestStep = (stepIndex) => {
         appState.currentGuestStep = stepIndex;
 
         guestSteps.forEach((step, idx) => {
             if (step) {
                 if (idx + 1 === stepIndex) {
-                    step.classList.add('active');
+                    step.style.display = 'flex';
+                    // Trigger smooth entrance
+                    setTimeout(() => {
+                        step.classList.add('active');
+                    }, 20);
                 } else {
                     step.classList.remove('active');
+                    setTimeout(() => {
+                        if (appState.currentGuestStep !== idx + 1) {
+                            step.style.display = 'none';
+                        }
+                    }, 300);
                 }
             }
         });
@@ -1885,7 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Step 1: Running "No" Button
+    // --- 15. Safe Escaping "No" Button with Strict Screen Margins ---
     const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
     const noPhrases = [
@@ -1895,16 +2077,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let phraseIndex = 0;
 
     const moveNoButton = (e) => {
-        if (e) e.preventDefault();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         triggerHaptic('warning');
 
         noBtn.style.position = 'fixed';
-        const padding = 20;
-        const maxX = window.innerWidth - noBtn.offsetWidth - padding;
-        const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+        noBtn.style.zIndex = '999';
 
-        const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
-        const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+        const btnWidth = noBtn.offsetWidth || 110;
+        const btnHeight = noBtn.offsetHeight || 46;
+
+        // Strict safe viewport boundaries (safe below Telegram header and above footer)
+        const safeTop = 85;
+        const safeBottom = 85;
+        const safeLeft = 16;
+        const safeRight = 16;
+
+        const maxAvailableX = Math.max(safeLeft, window.innerWidth - btnWidth - safeRight);
+        const maxAvailableY = Math.max(safeTop, window.innerHeight - btnHeight - safeBottom);
+
+        let randomX = Math.floor(safeLeft + Math.random() * (maxAvailableX - safeLeft));
+        let randomY = Math.floor(safeTop + Math.random() * (maxAvailableY - safeTop));
+
+        // Clamp strictly to screen bounds
+        randomX = Math.min(Math.max(safeLeft, randomX), maxAvailableX);
+        randomY = Math.min(Math.max(safeTop, randomY), maxAvailableY);
 
         noBtn.style.left = `${randomX}px`;
         noBtn.style.top = `${randomY}px`;
@@ -1932,11 +2131,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setTimeout(() => {
                 updateGuestStep(2);
-            }, 350);
+            }, 300);
         });
     }
 
-    // --- 13. Setup Guest View from Invite / Builder Data ---
+    // --- 16. Setup Guest View from Invite / Builder Data ---
     const guestFoodOptionsContainer = document.getElementById('guestFoodOptions');
     const guestActivityOptionsContainer = document.getElementById('guestActivityOptions');
     const nextToActivityBtn = document.getElementById('nextToActivityBtn');
@@ -1947,6 +2146,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const setupGuestViewWithInvite = (invite) => {
         appState.loadedInvite = invite;
         appState.currentInviteId = invite.id;
+
+        // Apply chosen theme
+        const inviteTheme = invite.theme || invite.th || 'sakura';
+        applyTheme(inviteTheme);
 
         const target = invite.targetName || 'Любимая';
         const questionText = invite.question || 'Пойдёшь со мной на свидание?';
@@ -2014,7 +2217,8 @@ document.addEventListener('DOMContentLoaded', () => {
             question,
             subtitle,
             foodOptions: appState.builder.foodList,
-            activityOptions: appState.builder.activityList
+            activityOptions: appState.builder.activityList,
+            theme: appState.selectedTheme || 'sakura'
         });
     };
 
@@ -2101,7 +2305,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Step 5: Finish & Guaranteed Cross-Account Delivery
+    // Step 5: Finish & Cross-Account Notification Delivery
     const summaryFood = document.getElementById('summaryFood');
     const summaryActivity = document.getElementById('summaryActivity');
     const summaryDate = document.getElementById('summaryDate');
@@ -2236,9 +2440,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 14. Initial Bootstrapping & State Parsing ---
+    // --- 17. Initial Bootstrapping & State Parsing ---
     const initApp = async () => {
         renderBuilderChips();
+        renderThemePicker();
 
         const currentParams = extractUrlParams();
         console.log('[Svidanka] Loaded params:', currentParams);
@@ -2256,7 +2461,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     question: parsed.q || 'Пойдёшь со мной на свидание?',
                     subtitle: parsed.s || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨',
                     foodOptions: (parsed.f || []).map((f, i) => ({ id: 'f_' + i, label: f.l, icon: f.i, enabled: true })),
-                    activityOptions: (parsed.a || []).map((a, i) => ({ id: 'a_' + i, label: a.l, icon: a.i, enabled: true }))
+                    activityOptions: (parsed.a || []).map((a, i) => ({ id: 'a_' + i, label: a.l, icon: a.i, enabled: true })),
+                    theme: parsed.th || 'sakura'
                 };
                 setupGuestViewWithInvite(inviteData);
                 switchMode('guest');
@@ -2293,6 +2499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-</script>
+    </script>
 </body>
+
 </html>
