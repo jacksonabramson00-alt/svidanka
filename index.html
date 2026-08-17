@@ -1526,7 +1526,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 inv = searchParams.get('inv') || searchParams.get('invite_id') || searchParams.get('invite');
                 mode = searchParams.get('mode');
                 
-                // Also check if start_param was passed in search
                 const spSearch = searchParams.get('tgWebAppStartParam') || searchParams.get('start_param') || searchParams.get('start');
                 if (spSearch) {
                     if (spSearch.startsWith('d_')) d = spSearch.substring(2);
@@ -1536,7 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) {}
         }
 
-        // 2. Hash params (if Telegram or browser passed data in hash)
+        // 2. Hash params
         if (hash) {
             try {
                 const hashClean = hash.startsWith('#') ? hash.substring(1) : hash;
@@ -1568,7 +1567,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return { d, inv, mode };
     };
 
-    const urlConfig = extractUrlParams();
     const urlParams = new URLSearchParams(window.location.search);
 
     if (tg?.initDataUnsafe?.user) {
@@ -2075,7 +2073,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Step 5: Finish & Universal Delivery
+    // Step 5: Finish & Guaranteed Cross-Account Delivery
     const summaryFood = document.getElementById('summaryFood');
     const summaryActivity = document.getElementById('summaryActivity');
     const summaryDate = document.getElementById('summaryDate');
@@ -2117,10 +2115,20 @@ document.addEventListener('DOMContentLoaded', () => {
             fireConfetti();
 
             const creatorChatId = appState.loadedInvite?.creatorChatId || DEFAULT_CREATOR_CHAT_ID;
-            const targetName = appState.loadedInvite?.targetName || 'Гостья';
+            
+            // Capture guest info from Telegram WebApp
+            const tgUser = tg?.initDataUnsafe?.user;
+            const guestId = tgUser?.id ? String(tgUser.id) : '';
+            const guestUsername = tgUser?.username ? `@${tgUser.username}` : '';
+            const guestName = tgUser?.first_name 
+                ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
+                : (appState.loadedInvite?.targetName || 'Гостья');
 
             let botMsg = `🎉💖 *Ура! Твоё приглашение на свидание принято!* 🥰\n\n`;
-            botMsg += `👤 *От кого:* ${targetName}\n`;
+            botMsg += `👤 *От кого:* ${guestName} ${guestUsername ? `(${guestUsername})` : ''}\n`;
+            if (guestId) {
+                botMsg += `🆔 *ID гостя:* \`${guestId}\`\n`;
+            }
             botMsg += `🍽️ *Еда:* ${appState.guestAnswers.food}\n`;
             botMsg += `🎭 *План:* ${appState.guestAnswers.activity}\n`;
             botMsg += `📅 *Дата:* ${formattedDate}\n`;
@@ -2130,7 +2138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             botMsg += `\n✨ _Готовься к идеальному вечеру!_ 🥂`;
 
-            // Direct Telegram Bot API Delivery
+            // Channel 1: Direct Telegram Bot API Delivery to Creator
             try {
                 fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -2142,6 +2150,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                 }).catch(() => {});
             } catch (e) {}
+
+            // Channel 2: Backend API Delivery (if connected)
+            const inviteId = appState.currentInviteId;
+            if (inviteId && !inviteId.startsWith('d_')) {
+                try {
+                    fetch(`/api/invites/${inviteId}/respond`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            food: appState.guestAnswers.food,
+                            activity: appState.guestAnswers.activity,
+                            date: formattedDate,
+                            time: appState.guestAnswers.time,
+                            notes: appState.guestAnswers.notes,
+                            respondentName: guestName,
+                            respondentId: guestId,
+                            respondentUsername: tgUser?.username || ''
+                        })
+                    }).catch(() => {});
+                } catch (e) {}
+            }
         });
     }
 
@@ -2149,6 +2178,20 @@ document.addEventListener('DOMContentLoaded', () => {
         sendTgBtn.addEventListener('click', () => {
             triggerHaptic('medium');
             const formattedDate = formatDisplayDate(appState.guestAnswers.date);
+            const creatorChatId = appState.loadedInvite?.creatorChatId || DEFAULT_CREATOR_CHAT_ID;
+            
+            // Build compact answer payload
+            const ansObj = {
+                c: creatorChatId,
+                t: appState.loadedInvite?.targetName || 'Я согласна!',
+                f: appState.guestAnswers.food,
+                a: appState.guestAnswers.activity,
+                d: formattedDate,
+                tm: appState.guestAnswers.time,
+                n: appState.guestAnswers.notes || ''
+            };
+            const ansB64 = encodeInviteState(ansObj);
+
             let text = `Я согласна на свидание! 🎉💖\n\n🍽️ Еда: ${appState.guestAnswers.food}\n🎭 План: ${appState.guestAnswers.activity}\n📅 Дата: ${formattedDate}\n⏰ Время: ${appState.guestAnswers.time}`;
             if (appState.guestAnswers.notes) {
                 text += `\n💬 Пожелание: ${appState.guestAnswers.notes}`;
@@ -2158,8 +2201,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tg && typeof tg.sendData === 'function') {
                 tg.sendData(text);
             } else {
-                const telegramUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
-                window.open(telegramUrl, '_blank');
+                // Fallback deep link to bot to deliver guaranteed message to creator
+                const botDeepLink = `https://t.me/${appState.botUsername}?start=ans_${ansB64}`;
+                window.open(botDeepLink, '_blank');
             }
         });
     }
