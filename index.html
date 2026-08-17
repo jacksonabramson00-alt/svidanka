@@ -9,11 +9,12 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
 /* ==========================================================================
-   Svidanka 2.0 — Romantic Neo-Glassmorphism Design System & Themes
+   Svidanka 2.0 — Unified Romantic Design System & Themes
    ========================================================================== */
 
-:root {
-    /* Default Theme: Sakura Rose */
+:root,
+html,
+html[data-theme="sakura"] {
     --primary-gradient: linear-gradient(135deg, #ff3377 0%, #ff6584 50%, #ff8ea3 100%);
     --primary-gradient-hover: linear-gradient(135deg, #ff1a66 0%, #ff4d73 50%, #ff7593 100%);
     --accent-gradient: linear-gradient(135deg, #a855f7 0%, #d946ef 50%, #ec4899 100%);
@@ -25,15 +26,19 @@
     --secondary-glass: rgba(255, 255, 255, 0.08);
     --secondary-border: rgba(255, 255, 255, 0.16);
     
-    --card-bg: rgba(24, 12, 36, 0.82);
-    --card-border: rgba(255, 255, 255, 0.14);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 35px rgba(255, 51, 119, 0.12);
+    --card-bg: rgba(24, 12, 36, 0.88);
+    --card-border: rgba(255, 51, 119, 0.22);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(255, 51, 119, 0.15);
     
     --body-bg-gradient: 
-        radial-gradient(circle at 15% 15%, rgba(255, 51, 119, 0.24) 0%, transparent 45%),
-        radial-gradient(circle at 85% 85%, rgba(138, 43, 226, 0.24) 0%, transparent 50%),
+        radial-gradient(circle at 15% 15%, rgba(255, 51, 119, 0.25) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(138, 43, 226, 0.25) 0%, transparent 50%),
         linear-gradient(160deg, #180927 0%, #0d0517 100%);
     --body-bg-color: #0d0517;
+
+    --brand-badge-color: #ff8ea3;
+    --brand-badge-bg: rgba(255, 51, 119, 0.12);
+    --brand-badge-border: rgba(255, 51, 119, 0.25);
 
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.84);
@@ -50,77 +55,89 @@
 /* ==========================================================================
    THEME 2: Midnight Starlight (Звёздная Ночь)
    ========================================================================== */
-body[data-theme="midnight"] {
+html[data-theme="midnight"] {
     --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #d946ef 100%);
     --primary-gradient-hover: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #c026d3 100%);
     --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #8b5cf6 100%);
     --primary-glow: rgba(139, 92, 246, 0.45);
     --accent-glow: rgba(59, 130, 246, 0.4);
-    --card-bg: rgba(10, 15, 36, 0.85);
-    --card-border: rgba(139, 92, 246, 0.2);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(59, 130, 246, 0.15);
+    --card-bg: rgba(10, 15, 36, 0.9);
+    --card-border: rgba(139, 92, 246, 0.25);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(59, 130, 246, 0.2);
     --body-bg-gradient: 
-        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
         linear-gradient(160deg, #070c20 0%, #030611 100%);
     --body-bg-color: #030611;
+    --brand-badge-color: #93c5fd;
+    --brand-badge-bg: rgba(59, 130, 246, 0.15);
+    --brand-badge-border: rgba(139, 92, 246, 0.3);
 }
 
 /* ==========================================================================
    THEME 3: Warm Sunset & Candlelight (Уютный Закат)
    ========================================================================== */
-body[data-theme="sunset"] {
+html[data-theme="sunset"] {
     --primary-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%);
     --primary-gradient-hover: linear-gradient(135deg, #d97706 0%, #ea580c 50%, #dc2626 100%);
     --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #f97316 100%);
     --primary-glow: rgba(249, 115, 22, 0.45);
     --accent-glow: rgba(245, 158, 11, 0.4);
-    --card-bg: rgba(30, 15, 10, 0.85);
-    --card-border: rgba(249, 115, 22, 0.2);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(249, 115, 22, 0.15);
+    --card-bg: rgba(28, 14, 10, 0.9);
+    --card-border: rgba(249, 115, 22, 0.25);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(249, 115, 22, 0.2);
     --body-bg-gradient: 
-        radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.22) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 20% 20%, rgba(249, 115, 22, 0.28) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(239, 68, 68, 0.25) 0%, transparent 50%),
         linear-gradient(160deg, #1c0d08 0%, #0d0604 100%);
     --body-bg-color: #0d0604;
+    --brand-badge-color: #fdba74;
+    --brand-badge-bg: rgba(249, 115, 22, 0.15);
+    --brand-badge-border: rgba(249, 115, 22, 0.3);
 }
 
 /* ==========================================================================
    THEME 4: Emerald VIP Luxury (Изумрудный Люкс)
    ========================================================================== */
-body[data-theme="emerald"] {
+html[data-theme="emerald"] {
     --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
     --primary-gradient-hover: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
     --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #10b981 100%);
     --primary-glow: rgba(16, 185, 129, 0.45);
     --accent-glow: rgba(251, 191, 36, 0.4);
-    --card-bg: rgba(6, 26, 20, 0.85);
-    --card-border: rgba(16, 185, 129, 0.22);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(16, 185, 129, 0.15);
+    --card-bg: rgba(6, 26, 20, 0.9);
+    --card-border: rgba(16, 185, 129, 0.28);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(16, 185, 129, 0.2);
     --body-bg-gradient: 
-        radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(251, 191, 36, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.25) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(251, 191, 36, 0.2) 0%, transparent 50%),
         linear-gradient(160deg, #051a14 0%, #020d0a 100%);
     --body-bg-color: #020d0a;
+    --brand-badge-color: #6ee7b7;
+    --brand-badge-bg: rgba(16, 185, 129, 0.15);
+    --brand-badge-border: rgba(16, 185, 129, 0.3);
 }
 
 /* ==========================================================================
    THEME 5: Sweet Berry Velvet (Клубничный Бархат)
    ========================================================================== */
-body[data-theme="berry"] {
+html[data-theme="berry"] {
     --primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9f1239 100%);
     --primary-gradient-hover: linear-gradient(135deg, #be123c 0%, #9f1239 50%, #881337 100%);
     --accent-gradient: linear-gradient(135deg, #fda4af 0%, #f43f5e 50%, #e11d48 100%);
     --primary-glow: rgba(225, 29, 72, 0.45);
     --accent-glow: rgba(244, 63, 94, 0.4);
-    --card-bg: rgba(30, 8, 16, 0.85);
-    --card-border: rgba(225, 29, 72, 0.22);
-    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(225, 29, 72, 0.15);
+    --card-bg: rgba(30, 8, 16, 0.9);
+    --card-border: rgba(225, 29, 72, 0.28);
+    --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(225, 29, 72, 0.2);
     --body-bg-gradient: 
-        radial-gradient(circle at 20% 20%, rgba(225, 29, 72, 0.24) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 20% 20%, rgba(225, 29, 72, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(244, 63, 94, 0.25) 0%, transparent 50%),
         linear-gradient(160deg, #200611 0%, #0f0308 100%);
     --body-bg-color: #0f0308;
+    --brand-badge-color: #fca5a5;
+    --brand-badge-bg: rgba(225, 29, 72, 0.15);
+    --brand-badge-border: rgba(225, 29, 72, 0.3);
 }
 
 * {
@@ -131,18 +148,26 @@ body[data-theme="berry"] {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
-html, body {
+html {
     width: 100%;
     min-height: 100%;
     background-color: var(--body-bg-color);
     background-image: var(--body-bg-gradient);
+    background-attachment: fixed;
+    background-size: cover;
     color: var(--text-primary);
+    transition: background-color 0.4s ease, background-image 0.4s ease;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    background: transparent;
     overflow-x: hidden;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding: 16px 12px 32px;
-    transition: background 0.5s ease;
 }
 
 #particleCanvas {
@@ -182,12 +207,13 @@ html, body {
     font-size: 13px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    color: #ff8ea3;
-    background: rgba(255, 51, 119, 0.12);
-    border: 1px solid rgba(255, 51, 119, 0.25);
+    color: var(--brand-badge-color);
+    background: var(--brand-badge-bg);
+    border: 1px solid var(--brand-badge-border);
     padding: 5px 12px;
     border-radius: 20px;
     backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
 }
 
 .mode-toggle-btn {
@@ -293,7 +319,7 @@ html, body {
     flex-direction: column;
     position: relative;
     overflow: hidden;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 .card::before {
@@ -306,15 +332,15 @@ html, body {
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
 }
 
-/* Ultra-Smooth Guest Step Transitions */
+/* Guest Step Cards */
 .step-card {
     display: none;
     opacity: 0;
-    transform: translateY(14px) scale(0.97);
+    transform: translateY(12px) scale(0.98);
     filter: blur(4px);
-    transition: opacity 0.35s cubic-bezier(0.2, 0.9, 0.3, 1),
-                transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1),
-                filter 0.3s ease;
+    transition: opacity 0.32s cubic-bezier(0.2, 0.9, 0.3, 1),
+                transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1),
+                filter 0.28s ease;
     align-items: center;
     text-align: center;
 }
@@ -326,7 +352,7 @@ html, body {
     filter: blur(0px);
 }
 
-/* Views (Constructor & Guest) */
+/* Views Container */
 #constructorView, #guestView {
     width: 100%;
     display: none;
@@ -387,9 +413,9 @@ html, body {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: #ff758c;
-    background: rgba(255, 51, 119, 0.12);
-    border: 1px solid rgba(255, 51, 119, 0.25);
+    color: var(--brand-badge-color);
+    background: var(--brand-badge-bg);
+    border: 1px solid var(--brand-badge-border);
     padding: 4px 12px;
     border-radius: 20px;
     margin-bottom: 10px;
@@ -467,7 +493,7 @@ html, body {
 }
 
 .theme-card.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.16);
     border-color: var(--accent-gold);
     transform: scale(1.04);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -487,15 +513,17 @@ html, body {
     text-align: center;
 }
 
-/* Buttons */
+/* Actions Group & Inside-Card Escaping No-Button */
 .actions-group {
     display: flex;
-    gap: 12px;
+    gap: 14px;
     width: 100%;
     justify-content: center;
     align-items: center;
     position: relative;
+    min-height: 72px;
     margin-top: 8px;
+    overflow: visible;
 }
 
 .btn {
@@ -564,13 +592,12 @@ html, body {
     50% { box-shadow: 0 10px 30px var(--primary-glow); }
 }
 
-/* Escaping No-Button with Strict Viewport Boundaries */
+/* Playful Dodging No-Button (Strictly within Card Bounds) */
 .no-btn {
-    transition: left 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-                top 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-                transform 0.2s ease;
-    will-change: left, top;
-    z-index: 999;
+    position: relative;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease;
+    will-change: transform;
+    z-index: 10;
 }
 
 .next-btn {
@@ -611,8 +638,8 @@ html, body {
 }
 
 .option-card.selected {
-    background: linear-gradient(145deg, rgba(255, 51, 119, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
-    border-color: #ff4b82;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.08) 100%);
+    border-color: #fff;
     transform: scale(1.02);
     box-shadow: 0 6px 20px var(--primary-glow);
 }
@@ -721,7 +748,7 @@ input[type="text"]:focus,
 input[type="date"]:focus,
 input[type="time"]:focus,
 textarea:focus {
-    border-color: #ff4b82;
+    border-color: #ffffff;
     background: rgba(0, 0, 0, 0.4);
     box-shadow: 0 0 14px var(--primary-glow);
 }
@@ -738,7 +765,7 @@ textarea {
 }
 
 .vip-ticket {
-    background: linear-gradient(135deg, rgba(35, 18, 50, 0.95) 0%, rgba(20, 10, 32, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(25, 25, 35, 0.95) 0%, rgba(15, 15, 25, 0.95) 100%);
     border: 1.5px solid rgba(255, 255, 255, 0.18);
     border-radius: 20px;
     padding: 20px 18px;
@@ -865,8 +892,8 @@ textarea {
 }
 
 .builder-chip.enabled {
-    background: rgba(255, 51, 119, 0.18);
-    border-color: rgba(255, 51, 119, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--brand-badge-color);
 }
 
 .builder-chip .chip-checkbox {
@@ -882,8 +909,8 @@ textarea {
 }
 
 .builder-chip.enabled .chip-checkbox {
-    background: #ff3377;
-    border-color: #ff3377;
+    background: var(--primary-gradient);
+    border-color: transparent;
     color: #fff;
 }
 
@@ -960,7 +987,7 @@ textarea {
 .share-link-box {
     width: 100%;
     background: rgba(0, 0, 0, 0.4);
-    border: 1.5px dashed rgba(255, 51, 119, 0.4);
+    border: 1.5px dashed var(--brand-badge-color);
     border-radius: 14px;
     padding: 12px;
     margin: 16px 0;
@@ -973,7 +1000,7 @@ textarea {
 .share-link-text {
     font-family: monospace;
     font-size: 13px;
-    color: #ff8ea3;
+    color: var(--brand-badge-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1369,13 +1396,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
     };
 
-    // --- 2. Themes Definition & Switcher ---
+    // --- 2. Themes Definition & Unified Switcher ---
     const THEMES = [
-        { id: 'sakura', name: '🌸 Нежность', color: 'linear-gradient(135deg, #ff3377, #ff8ea3)', particles: ['💖', '💕', '✨', '🌸', '❤️'] },
-        { id: 'midnight', name: '🌌 Ночь', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', particles: ['🌟', '✨', '🌙', '🪐', '💫'] },
-        { id: 'sunset', name: '🕯️ Закат', color: 'linear-gradient(135deg, #f59e0b, #ef4444)', particles: ['🕯️', '✨', '🍷', '🍂', '🧡'] },
-        { id: 'emerald', name: '💎 Люкс', color: 'linear-gradient(135deg, #10b981, #fbbf24)', particles: ['💎', '👑', '✨', '🥂', '🌿'] },
-        { id: 'berry', name: '🍓 Бархат', color: 'linear-gradient(135deg, #e11d48, #fda4af)', particles: ['🍓', '❤️', '🍫', '💋', '✨'] }
+        { id: 'sakura', name: '🌸 Нежность', color: 'linear-gradient(135deg, #ff3377, #ff8ea3)', hex: '#0d0517', particles: ['💖', '💕', '✨', '🌸', '❤️'] },
+        { id: 'midnight', name: '🌌 Ночь', color: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', hex: '#030611', particles: ['🌟', '✨', '🌙', '🪐', '💫'] },
+        { id: 'sunset', name: '🕯️ Закат', color: 'linear-gradient(135deg, #f59e0b, #ef4444)', hex: '#0d0604', particles: ['🕯️', '✨', '🍷', '🍂', '🧡'] },
+        { id: 'emerald', name: '💎 Люкс', color: 'linear-gradient(135deg, #10b981, #fbbf24)', hex: '#020d0a', particles: ['💎', '👑', '✨', '🥂', '🌿'] },
+        { id: 'berry', name: '🍓 Бархат', color: 'linear-gradient(135deg, #e11d48, #fda4af)', hex: '#0f0308', particles: ['🍓', '❤️', '🍫', '💋', '✨'] }
     ];
 
     let currentActiveTheme = 'sakura';
@@ -1387,9 +1414,24 @@ document.addEventListener('DOMContentLoaded', () => {
         currentThemeParticles = found.particles;
 
         if (found.id === 'sakura') {
-            document.body.removeAttribute('data-theme');
+            document.documentElement.removeAttribute('data-theme');
         } else {
-            document.body.setAttribute('data-theme', found.id);
+            document.documentElement.setAttribute('data-theme', found.id);
+        }
+
+        // Reset particle symbols
+        if (particles && particles.length > 0) {
+            particles.forEach(p => {
+                p.char = currentThemeParticles[Math.floor(Math.random() * currentThemeParticles.length)];
+            });
+        }
+
+        // Synchronize Telegram Window Background
+        if (tg) {
+            try {
+                if (typeof tg.setBackgroundColor === 'function') tg.setBackgroundColor(found.hex);
+                if (typeof tg.setHeaderColor === 'function') tg.setHeaderColor(found.hex);
+            } catch (e) {}
         }
 
         // Update Theme picker UI if present
@@ -2015,7 +2057,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 14. Guest Flow Stepper with Ultra-Smooth Transitions ---
+    // --- 14. Guest Flow Stepper with Smooth Fade Transitions ---
     const updateGuestStep = (stepIndex) => {
         appState.currentGuestStep = stepIndex;
 
@@ -2023,7 +2065,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (step) {
                 if (idx + 1 === stepIndex) {
                     step.style.display = 'flex';
-                    // Trigger smooth entrance
                     setTimeout(() => {
                         step.classList.add('active');
                     }, 20);
@@ -2033,7 +2074,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (appState.currentGuestStep !== idx + 1) {
                             step.style.display = 'none';
                         }
-                    }, 300);
+                    }, 280);
                 }
             }
         });
@@ -2067,7 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 15. Safe Escaping "No" Button with Strict Screen Margins ---
+    // --- 15. Playful Dodging "No" Button (Strictly Constrained Inside Card) ---
     const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
     const noPhrases = [
@@ -2075,6 +2116,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "Не поймаешь 😜", "Ой, мимо! 🙈", "Кнопка сломалась 💔", "Ну нажми Да! 💕"
     ];
     let phraseIndex = 0;
+    let lastOffsetX = 0;
+    let lastOffsetY = 0;
 
     const moveNoButton = (e) => {
         if (e) {
@@ -2083,30 +2126,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         triggerHaptic('warning');
 
-        noBtn.style.position = 'fixed';
-        noBtn.style.zIndex = '999';
+        // Playful translations within card
+        const offsets = [
+            { x: 80, y: 35 },
+            { x: -80, y: 35 },
+            { x: 80, y: -35 },
+            { x: -80, y: -35 },
+            { x: 0, y: 50 },
+            { x: 0, y: -50 },
+            { x: 95, y: 0 },
+            { x: -95, y: 0 }
+        ];
 
-        const btnWidth = noBtn.offsetWidth || 110;
-        const btnHeight = noBtn.offsetHeight || 46;
+        const filtered = offsets.filter(o => o.x !== lastOffsetX || o.y !== lastOffsetY);
+        const chosen = filtered[Math.floor(Math.random() * filtered.length)];
+        lastOffsetX = chosen.x;
+        lastOffsetY = chosen.y;
 
-        // Strict safe viewport boundaries (safe below Telegram header and above footer)
-        const safeTop = 85;
-        const safeBottom = 85;
-        const safeLeft = 16;
-        const safeRight = 16;
-
-        const maxAvailableX = Math.max(safeLeft, window.innerWidth - btnWidth - safeRight);
-        const maxAvailableY = Math.max(safeTop, window.innerHeight - btnHeight - safeBottom);
-
-        let randomX = Math.floor(safeLeft + Math.random() * (maxAvailableX - safeLeft));
-        let randomY = Math.floor(safeTop + Math.random() * (maxAvailableY - safeTop));
-
-        // Clamp strictly to screen bounds
-        randomX = Math.min(Math.max(safeLeft, randomX), maxAvailableX);
-        randomY = Math.min(Math.max(safeTop, randomY), maxAvailableY);
-
-        noBtn.style.left = `${randomX}px`;
-        noBtn.style.top = `${randomY}px`;
+        const rot = (Math.random() - 0.5) * 16;
+        noBtn.style.transform = `translate(${chosen.x}px, ${chosen.y}px) rotate(${rot}deg)`;
 
         phraseIndex = (phraseIndex + 1) % noPhrases.length;
         noBtn.textContent = noPhrases[phraseIndex];
@@ -2123,9 +2161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             triggerHaptic('success');
             fireConfetti();
             if (noBtn) {
-                noBtn.style.position = 'relative';
-                noBtn.style.left = 'auto';
-                noBtn.style.top = 'auto';
+                noBtn.style.transform = 'translate(0px, 0px) rotate(0deg)';
                 noBtn.textContent = "Нет 😢";
             }
 
@@ -2420,7 +2456,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 a: appState.guestAnswers.activity,
                 d: formattedDate,
                 tm: appState.guestAnswers.time,
-                n: appState.guestAnswers.notes || ''
+                n: appState.guestAnswers.notes || '',
+                th: appState.loadedInvite?.theme || 'sakura'
             };
             const ansB64 = encodeInviteState(ansObj);
 
