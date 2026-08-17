@@ -1,0 +1,2158 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Svidanka 💖 Романтический конструктор свиданий</title>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #ff3377 0%, #ff6584 50%, #ff8ea3 100%);
+            --primary-gradient-hover: linear-gradient(135deg, #ff1a66 0%, #ff4d73 50%, #ff7593 100%);
+            --accent-gradient: linear-gradient(135deg, #a855f7 0%, #d946ef 50%, #ec4899 100%);
+            --gold-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --primary-glow: rgba(255, 51, 119, 0.45);
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --secondary-glass: rgba(255, 255, 255, 0.08);
+            --secondary-border: rgba(255, 255, 255, 0.16);
+            --card-bg: rgba(24, 12, 36, 0.82);
+            --card-border: rgba(255, 255, 255, 0.14);
+            --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 35px rgba(255, 51, 119, 0.12);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.82);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --accent-gold: #ffd166;
+            --accent-green: #4ade80;
+            --radius-card: 26px;
+            --radius-btn: 18px;
+            --radius-input: 16px;
+            --radius-chip: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            min-height: 100%;
+            background-color: #0d0517;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(255, 51, 119, 0.22) 0%, transparent 45%),
+                radial-gradient(circle at 85% 85%, rgba(138, 43, 226, 0.22) 0%, transparent 50%),
+                linear-gradient(160deg, #180927 0%, #0d0517 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px 12px 32px;
+        }
+
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 460px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .top-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 4px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            color: #ff8ea3;
+            background: rgba(255, 51, 119, 0.12);
+            border: 1px solid rgba(255, 51, 119, 0.25);
+            padding: 5px 12px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .mode-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--secondary-border);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .mode-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .stepper-header {
+            width: 100%;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 6px;
+        }
+
+        .stepper-header.visible {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--secondary-border);
+            color: var(--text-primary);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        .stepper-dots {
+            display: flex;
+            gap: 7px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .dot.active {
+            width: 22px;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .step-indicator-badge {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .card {
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-card);
+            box-shadow: var(--card-shadow);
+            padding: 26px 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        .step-card {
+            display: none;
+            align-items: center;
+            text-align: center;
+        }
+
+        .step-card.active {
+            display: flex;
+            animation: cardAppear 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .hero-icon-container {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-hero-emoji {
+            font-size: 46px;
+            z-index: 2;
+            animation: floatEmoji 3s ease-in-out infinite;
+        }
+
+        .glow-orb {
+            position: absolute;
+            width: 68px;
+            height: 68px;
+            background: radial-gradient(circle, rgba(255, 51, 119, 0.5) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(12px);
+            z-index: 1;
+            animation: pulseOrb 2.5s ease-in-out infinite;
+        }
+
+        @keyframes floatEmoji {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-7px) rotate(4deg); }
+        }
+
+        @keyframes pulseOrb {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.25); opacity: 0.9; }
+        }
+
+        .step-badge-tag {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ff758c;
+            background: rgba(255, 51, 119, 0.12);
+            border: 1px solid rgba(255, 51, 119, 0.25);
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .step-badge-tag.success-tag {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.12);
+            border-color: rgba(74, 222, 128, 0.3);
+        }
+
+        .step-badge-tag.gold-tag {
+            color: var(--accent-gold);
+            background: rgba(251, 191, 36, 0.12);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .main-title {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 10px;
+            letter-spacing: -0.4px;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .step-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+            color: #ffffff;
+        }
+
+        .step-desc, .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+            max-width: 320px;
+        }
+
+        .heart-pulse {
+            display: inline-block;
+            animation: heartBeat 1.4s infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.22); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.12); }
+        }
+
+        .actions-group {
+            display: flex;
+            gap: 14px;
+            width: 100%;
+            min-height: 56px;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-top: 8px;
+        }
+
+        .btn {
+            font-size: 15px;
+            font-weight: 700;
+            padding: 13px 24px;
+            border-radius: var(--radius-btn);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            box-shadow: 0 8px 20px var(--primary-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-gradient-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 26px rgba(255, 51, 119, 0.6);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(1px);
+        }
+
+        .btn-primary:disabled {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.3);
+            box-shadow: none;
+            cursor: not-allowed;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-glass);
+            color: var(--text-primary);
+            border: 1px solid var(--secondary-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.16);
+            transform: translateY(-1px);
+        }
+
+        .pulse-btn {
+            animation: subtlePulse 2s infinite;
+        }
+
+        @keyframes subtlePulse {
+            0%, 100% { box-shadow: 0 8px 20px var(--primary-glow); }
+            50% { box-shadow: 0 10px 30px rgba(255, 51, 119, 0.7); }
+        }
+
+        .no-btn {
+            transition: left 0.2s ease, top 0.2s ease, transform 0.15s ease;
+            z-index: 10;
+        }
+
+        .next-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 16px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .option-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .option-card.selected {
+            background: linear-gradient(145deg, rgba(255, 51, 119, 0.3) 0%, rgba(138, 43, 226, 0.3) 100%);
+            border-color: #ff4b82;
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 51, 119, 0.3);
+        }
+
+        .option-icon {
+            font-size: 30px;
+            line-height: 1;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+            transition: transform 0.2s ease;
+        }
+
+        .option-card:hover .option-icon,
+        .option-card.selected .option-icon {
+            transform: scale(1.14);
+        }
+
+        .option-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .quick-chips-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 18px;
+        }
+
+        .chip-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-chip);
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        .chip-btn.active {
+            background: var(--primary-gradient);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        .date-time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .input-group label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-input);
+            outline: none;
+            transition: all 0.22s ease;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        input:focus {
+            border-color: #ff4b82;
+            background: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 0 15px rgba(255, 51, 119, 0.3);
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        /* VIP Ticket */
+        .dating-ticket {
+            width: 100%;
+            background: linear-gradient(145deg, rgba(38, 16, 52, 0.95) 0%, rgba(20, 9, 30, 0.95) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.35);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 14px 0 20px;
+            position: relative;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), inset 0 0 20px rgba(255, 215, 0, 0.06);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .ticket-brand {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(255, 209, 102, 0.4);
+        }
+
+        .ticket-status {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.4);
+            border-radius: 8px;
+            letter-spacing: 1px;
+        }
+
+        .ticket-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .ticket-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .ticket-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .ticket-item.full {
+            grid-column: 1 / -1;
+        }
+
+        .ticket-item-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .ticket-item-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .ticket-divider {
+            position: relative;
+            margin: 16px -20px 12px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .cutout-left, .cutout-right {
+            width: 16px;
+            height: 16px;
+            background-color: #0d0517;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .cutout-left { left: -8px; }
+        .cutout-right { right: -8px; }
+
+        .dash-line {
+            width: 100%;
+            border-top: 2px dashed rgba(255, 255, 255, 0.2);
+            margin: 0 16px;
+        }
+
+        .ticket-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 4px;
+        }
+
+        .ticket-barcode {
+            font-family: monospace;
+            font-size: 15px;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .ticket-heart {
+            font-size: 20px;
+            animation: heartBeat 1.4s infinite;
+        }
+
+        .ticket-actions {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Constructor Specific */
+        #constructorView {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        #constructorView.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #guestView {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #guestView.active {
+            display: flex;
+        }
+
+        .constructor-header {
+            text-align: center;
+            padding: 6px 0 14px;
+        }
+
+        .constructor-section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .constructor-section-title .section-num {
+            background: var(--primary-gradient);
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .builder-chips-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .builder-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .builder-chip:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .builder-chip.enabled {
+            background: rgba(255, 51, 119, 0.18);
+            border-color: rgba(255, 51, 119, 0.5);
+        }
+
+        .builder-chip .chip-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .builder-chip.enabled .chip-checkbox {
+            background: #ff3377;
+            border-color: #ff3377;
+            color: #fff;
+        }
+
+        .builder-chip .chip-icon {
+            font-size: 18px;
+        }
+
+        .builder-chip .chip-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .add-custom-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .add-custom-row input {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        .add-btn {
+            padding: 10px 16px;
+            font-size: 13px;
+            border-radius: var(--radius-input);
+            white-space: nowrap;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 4, 18, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-card);
+            box-shadow: var(--card-shadow);
+            padding: 28px 20px;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .share-link-box {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1.5px dashed rgba(255, 51, 119, 0.4);
+            border-radius: 14px;
+            padding: 12px;
+            margin: 16px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .share-link-text {
+            font-family: monospace;
+            font-size: 13px;
+            color: #ff8ea3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        .copy-mini-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .copy-mini-btn:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .close-modal-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-muted);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .close-modal-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(50px);
+            background: rgba(20, 10, 30, 0.95);
+            border: 1px solid #4ade80;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .toast-msg.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 420px) {
+            .card { padding: 22px 16px; border-radius: 22px; }
+            .main-title { font-size: 21px; }
+            .step-title { font-size: 19px; }
+            .options-grid { gap: 8px; }
+            .option-card { padding: 13px 8px; }
+            .option-icon { font-size: 26px; }
+            .option-label { font-size: 12px; }
+            .btn { padding: 12px 18px; font-size: 14px; }
+            .builder-chips-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="app-container">
+        <!-- Top App Bar -->
+        <div class="top-bar">
+            <div class="brand-badge">
+                <span>💖</span> Svidanka 2.0
+            </div>
+            <button id="modeToggleBtn" class="mode-toggle-btn" type="button">
+                👁️ Тест гостя
+            </button>
+        </div>
+
+        <!-- ===================================================================
+             CONSTRUCTOR VIEW (Создатель свидания)
+             =================================================================== -->
+        <div id="constructorView" class="active">
+            <!-- Header Card -->
+            <div class="card constructor-header">
+                <div class="hero-icon-container" style="margin: 0 auto 12px;">
+                    <span class="floating-hero-emoji">✨</span>
+                    <div class="glow-orb"></div>
+                </div>
+                <div class="step-badge-tag gold-tag">Конструктор свиданий 🥂</div>
+                <h1 class="main-title">Создай идеальное свидание</h1>
+                <p class="subtitle" style="margin-bottom: 0;">Собери персональное интерактивное приглашение и отправь половинке в Telegram! 💌</p>
+            </div>
+
+            <!-- Section 1: Для кого -->
+            <div class="card">
+                <div class="constructor-section-title">
+                    <span class="section-num">1</span>
+                    <span>Для кого приглашение?</span>
+                </div>
+                <div class="input-group">
+                    <label for="targetNameInput">Имя или ласковое обращение</label>
+                    <input type="text" id="targetNameInput" placeholder="Например: Машенька, Любимая, Котёнок" maxlength="40">
+                </div>
+                <div class="input-group">
+                    <label for="customQuestionInput">Главный вопрос</label>
+                    <input type="text" id="customQuestionInput" value="Пойдёшь со мной на свидание?" maxlength="60">
+                </div>
+                <div class="input-group" style="margin-bottom: 0;">
+                    <label for="customSubtitleInput">Тёплые слова / обещание</label>
+                    <input type="text" id="customSubtitleInput" value="Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨" maxlength="100">
+                </div>
+            </div>
+
+            <!-- Section 2: Еда -->
+            <div class="card">
+                <div class="constructor-section-title">
+                    <span class="section-num">2</span>
+                    <span>Что предложим покушать? 🍽️</span>
+                </div>
+                <p class="step-desc" style="font-size: 13px; margin-bottom: 12px;">Отметьте галочками варианты, которые будут предложены:</p>
+                <div class="builder-chips-grid" id="builderFoodChips">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <div class="add-custom-row">
+                    <input type="text" id="customFoodInput" placeholder="Добавить своё блюдо / ресторан..." maxlength="35">
+                    <button id="addCustomFoodBtn" class="btn btn-secondary add-btn" type="button">+ Добавить</button>
+                </div>
+            </div>
+
+            <!-- Section 3: Досуг -->
+            <div class="card">
+                <div class="constructor-section-title">
+                    <span class="section-num">3</span>
+                    <span>Чем займёмся? 🎭</span>
+                </div>
+                <p class="step-desc" style="font-size: 13px; margin-bottom: 12px;">Выберите доступные варианты атмосферы и досуга:</p>
+                <div class="builder-chips-grid" id="builderActivityChips">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <div class="add-custom-row">
+                    <input type="text" id="customActivityInput" placeholder="Добавить своё развлечение..." maxlength="35">
+                    <button id="addCustomActivityBtn" class="btn btn-secondary add-btn" type="button">+ Добавить</button>
+                </div>
+            </div>
+
+            <!-- Generate Action Card -->
+            <div class="card" style="align-items: center; text-align: center;">
+                <button id="generateInviteBtn" class="btn btn-primary pulse-btn" style="width: 100%; padding: 16px; font-size: 16px;" type="button">
+                    ✨ Создать приглашение 💌
+                </button>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
+                    Вы получите готовую ссылку для отправки в Telegram
+                </p>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             GUEST VIEW (Квест и выбор половинки)
+             =================================================================== -->
+        <div id="guestView">
+            <!-- Stepper Header -->
+            <div class="stepper-header" id="stepperHeader">
+                <button class="back-btn" id="backBtn" aria-label="Назад" type="button">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+                <div class="stepper-dots">
+                    <span class="dot active" data-step="1"></span>
+                    <span class="dot" data-step="2"></span>
+                    <span class="dot" data-step="3"></span>
+                    <span class="dot" data-step="4"></span>
+                    <span class="dot" data-step="5"></span>
+                </div>
+                <div class="step-indicator-badge" id="stepBadge">Шаг 1 из 3</div>
+            </div>
+
+            <!-- STEP 1: Main Interactive Question -->
+            <div id="step1" class="card step-card active">
+                <div class="hero-icon-container">
+                    <span class="floating-hero-emoji">💌</span>
+                    <div class="glow-orb"></div>
+                </div>
+                <h1 class="main-title" id="guestMainTitle">Пойдёшь со мной на свидание? <span class="heart-pulse">💖</span></h1>
+                <p class="subtitle" id="guestSubtitle">Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨</p>
+                <div class="actions-group">
+                    <button id="yesBtn" class="btn btn-primary pulse-btn" type="button">Да! 😍</button>
+                    <button id="noBtn" class="btn btn-secondary no-btn" type="button">Нет 😢</button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Food Option Selection -->
+            <div id="step2" class="card step-card">
+                <div class="step-badge-tag">Гастрономия 🍽️</div>
+                <h2 class="step-title">Что будем кушать?</h2>
+                <p class="step-desc">Выбери, чем порадуем вкусовые рецепторы</p>
+
+                <div class="options-grid" id="guestFoodOptions">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <button id="nextToActivityBtn" class="btn btn-primary next-btn" disabled type="button">Дальше ➡️</button>
+            </div>
+
+            <!-- STEP 3: Activity Option Selection -->
+            <div id="step3" class="card step-card">
+                <div class="step-badge-tag">Атмосфера 🎭</div>
+                <h2 class="step-title">Чем займёмся?</h2>
+                <p class="step-desc">Выбери настроение и формат нашего вечера</p>
+
+                <div class="options-grid" id="guestActivityOptions">
+                    <!-- Populated dynamically via JS -->
+                </div>
+                <button id="nextToTimeBtn" class="btn btn-primary next-btn" disabled type="button">Дальше ➡️</button>
+            </div>
+
+            <!-- STEP 4: Date & Time -->
+            <div id="step4" class="card step-card">
+                <div class="step-badge-tag">Время встречи 📅</div>
+                <h2 class="step-title">Когда встретимся?</h2>
+                <p class="step-desc">Выбери быстрый вариант или укажи удобное время</p>
+
+                <div class="quick-chips-wrapper" id="datePresets">
+                    <button type="button" class="chip-btn" data-preset="today">Сегодня 🌙</button>
+                    <button type="button" class="chip-btn" data-preset="tomorrow">Завтра ✨</button>
+                    <button type="button" class="chip-btn" data-preset="friday">В пятницу 🎉</button>
+                    <button type="button" class="chip-btn" data-preset="weekend">В выходные 🥂</button>
+                </div>
+
+                <div class="date-time-inputs">
+                    <div class="input-group">
+                        <label for="datePicker">📅 Дата</label>
+                        <input type="date" id="datePicker" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="timePicker">⏰ Время</label>
+                        <input type="time" id="timePicker" required>
+                    </div>
+                </div>
+
+                <div class="input-group" style="width: 100%;">
+                    <label for="notesInput">💬 Пожелания (по желанию)</label>
+                    <input type="text" id="notesInput" placeholder="Например: хочу столик у окна ✨" maxlength="100">
+                </div>
+
+                <button id="finishBtn" class="btn btn-primary next-btn" disabled type="button">Забронировать билет 🎟️</button>
+            </div>
+
+            <!-- STEP 5: Ticket & Confirmation -->
+            <div id="step5" class="card step-card">
+                <div class="step-badge-tag success-tag">Свидание подтверждено! 🎉</div>
+                <h2 class="step-title" style="text-shadow: 0 0 20px rgba(255, 51, 119, 0.6);">Ура! Жду встречи! 🥰❤️</h2>
+                <p class="step-desc">Твой персональный билет на идеальный вечер:</p>
+
+                <div class="dating-ticket">
+                    <div class="ticket-header">
+                        <span class="ticket-brand">DATE PASS 💖</span>
+                        <span class="ticket-status">CONFIRMED</span>
+                    </div>
+                    <div class="ticket-body">
+                        <div class="ticket-row">
+                            <div class="ticket-item">
+                                <span class="ticket-item-label">🍽️ Еда:</span>
+                                <span class="ticket-item-val" id="summaryFood">—</span>
+                            </div>
+                            <div class="ticket-item">
+                                <span class="ticket-item-label">🎭 План:</span>
+                                <span class="ticket-item-val" id="summaryActivity">—</span>
+                            </div>
+                        </div>
+                        <div class="ticket-row">
+                            <div class="ticket-item">
+                                <span class="ticket-item-label">📅 Дата:</span>
+                                <span class="ticket-item-val" id="summaryDate">—</span>
+                            </div>
+                            <div class="ticket-item">
+                                <span class="ticket-item-label">⏰ Время:</span>
+                                <span class="ticket-item-val" id="summaryTime">—</span>
+                            </div>
+                        </div>
+                        <div class="ticket-row" id="summaryNoteRow" style="display: none;">
+                            <div class="ticket-item full">
+                                <span class="ticket-item-label">💬 Пожелание:</span>
+                                <span class="ticket-item-val" id="summaryNote">—</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ticket-divider">
+                        <div class="cutout-left"></div>
+                        <div class="dash-line"></div>
+                        <div class="cutout-right"></div>
+                    </div>
+                    <div class="ticket-footer">
+                        <div class="ticket-barcode">||| | |||| | || ||||| ||| | |||</div>
+                        <span class="ticket-heart">❤️</span>
+                    </div>
+                </div>
+
+                <div class="ticket-actions">
+                    <button id="sendTgBtn" class="btn btn-primary pulse-btn" type="button">Отправить в чат 💌</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         SHARE & SUCCESS MODAL
+         =================================================================== -->
+    <div id="shareModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeModalBtn" class="close-modal-btn" type="button">✕</button>
+            <div class="hero-icon-container" style="margin: 0 auto 10px;">
+                <span class="floating-hero-emoji">💌</span>
+                <div class="glow-orb"></div>
+            </div>
+            <div class="step-badge-tag success-tag">Приглашение готово! 🎉</div>
+            <h2 class="step-title" style="font-size: 20px;">Отправь ссылку половинке</h2>
+            <p class="step-desc" style="margin-bottom: 8px;">
+                Как только она выберет варианты и подтвердит свидание, ответ сразу придёт тебе в Telegram!
+            </p>
+
+            <div class="share-link-box">
+                <span id="shareLinkText" class="share-link-text">https://t.me/...</span>
+                <button id="copyLinkBtn" class="copy-mini-btn" type="button">Скопировать</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="shareInTgBtn" class="btn btn-primary" type="button">
+                    💌 Отправить в Telegram
+                </button>
+                <button id="testInviteBtn" class="btn btn-secondary" type="button">
+                    👁️ Посмотреть как гость
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const BOT_TOKEN = '8746874049:AAFwIe93f_lrc3_uH5RrqE5PwqxKW4X33y0';
+    const DEFAULT_CREATOR_CHAT_ID = '1706405587';
+    const BOT_USERNAME = 'antrish_bot';
+
+    // --- 1. Telegram WebApp SDK Initialization ---
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        try {
+            tg.ready();
+            tg.expand();
+            if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+        } catch (e) {
+            console.warn('[WebApp] Init note:', e);
+        }
+    }
+
+    const triggerHaptic = (type = 'light') => {
+        if (!tg?.HapticFeedback) return;
+        try {
+            if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+            else if (type === 'medium') tg.HapticFeedback.impactOccurred('medium');
+            else if (type === 'heavy') tg.HapticFeedback.impactOccurred('heavy');
+            else if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+            else if (type === 'warning') tg.HapticFeedback.notificationOccurred('warning');
+        } catch (e) {}
+    };
+
+    // --- 2. Base64 UTF-8 State Encoder / Decoder (Zero-Backend Independent Storage) ---
+    const encodeInviteState = (obj) => {
+        try {
+            const json = JSON.stringify(obj);
+            return btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (match, p1) => String.fromCharCode('0x' + p1)))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        } catch (e) {
+            return '';
+        }
+    };
+
+    const decodeInviteState = (str) => {
+        try {
+            let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+            while (base64.length % 4) base64 += '=';
+            const json = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+            return JSON.parse(json);
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // --- 3. Ambient Particle Canvas Engine ---
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    const resizeCanvas = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const heartSymbols = ['💖', '💕', '✨', '🌸', '✨', '❤️'];
+
+    class Particle {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = canvas.height + Math.random() * 50;
+            this.size = Math.random() * 15 + 10;
+            this.speedY = Math.random() * 1.1 + 0.5;
+            this.speedX = (Math.random() - 0.5) * 0.7;
+            this.opacity = Math.random() * 0.55 + 0.2;
+            this.char = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+            this.rotation = Math.random() * Math.PI * 2;
+            this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+        }
+        update() {
+            this.y -= this.speedY;
+            this.x += this.speedX;
+            this.rotation += this.rotationSpeed;
+            if (this.y < -40 || this.x < -40 || this.x > canvas.width + 40) {
+                this.reset();
+            }
+        }
+        draw() {
+            ctx.save();
+            ctx.globalAlpha = this.opacity;
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation);
+            ctx.font = `${this.size}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.char, 0, 0);
+            ctx.restore();
+        }
+    }
+
+    const initParticles = () => {
+        const count = Math.min(20, Math.floor(window.innerWidth / 24));
+        particles = [];
+        for (let i = 0; i < count; i++) {
+            const p = new Particle();
+            p.y = Math.random() * canvas.height;
+            particles.push(p);
+        }
+    };
+    initParticles();
+
+    const animateParticles = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+    };
+    animateParticles();
+
+    // --- 4. Confetti Animation Engine ---
+    const fireConfetti = () => {
+        const confCanvas = document.createElement('canvas');
+        confCanvas.style.position = 'fixed';
+        confCanvas.style.top = '0';
+        confCanvas.style.left = '0';
+        confCanvas.style.width = '100vw';
+        confCanvas.style.height = '100vh';
+        confCanvas.style.pointerEvents = 'none';
+        confCanvas.style.zIndex = '9999';
+        document.body.appendChild(confCanvas);
+        confCanvas.width = window.innerWidth;
+        confCanvas.height = window.innerHeight;
+        const cCtx = confCanvas.getContext('2d');
+
+        const colors = ['#ff3377', '#ff6584', '#ffd166', '#a855f7', '#00f2fe', '#ffffff', '#ff8ea3'];
+        const pieces = [];
+
+        for (let i = 0; i < 70; i++) {
+            pieces.push({
+                x: confCanvas.width / 2 + (Math.random() - 0.5) * 100,
+                y: confCanvas.height * 0.65,
+                vx: (Math.random() - 0.5) * 14,
+                vy: -Math.random() * 15 - 6,
+                size: Math.random() * 8 + 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                rotationSpeed: (Math.random() - 0.5) * 12,
+                opacity: 1,
+                gravity: 0.4
+            });
+        }
+
+        let frames = 0;
+        const renderConfetti = () => {
+            cCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+            let active = 0;
+            pieces.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.rotation += p.rotationSpeed;
+                if (frames > 35) p.opacity -= 0.018;
+
+                if (p.opacity > 0) {
+                    active++;
+                    cCtx.save();
+                    cCtx.globalAlpha = Math.max(0, p.opacity);
+                    cCtx.translate(p.x, p.y);
+                    cCtx.rotate((p.rotation * Math.PI) / 180);
+                    cCtx.fillStyle = p.color;
+                    cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                    cCtx.restore();
+                }
+            });
+            frames++;
+            if (active > 0 && frames < 140) {
+                requestAnimationFrame(renderConfetti);
+            } else {
+                if (confCanvas.parentNode) confCanvas.parentNode.removeChild(confCanvas);
+            }
+        };
+        renderConfetti();
+    };
+
+    // --- 5. Toast Notification Helper ---
+    const showToast = (text, duration = 2500) => {
+        let toast = document.getElementById('toastMsg');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toastMsg';
+            toast.className = 'toast-msg';
+            document.body.appendChild(toast);
+        }
+        toast.innerHTML = `<span>✨</span> ${text}`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), duration);
+    };
+
+    // --- 6. Application State & Presets ---
+    const DEFAULT_FOOD = [
+        { id: 'sushi', label: 'Суши & Роллы', icon: '🍣', enabled: true },
+        { id: 'pizza', label: 'Итальянская пицца', icon: '🍕', enabled: true },
+        { id: 'burgers', label: 'Сочные бургеры', icon: '🍔', enabled: true },
+        { id: 'coffee', label: 'Кофе & Десерты', icon: '🍰', enabled: true },
+        { id: 'pasta', label: 'Паста & Вино', icon: '🍝', enabled: true },
+        { id: 'surprise_food', label: 'Сюрприз на твой вкус', icon: '✨', enabled: true },
+        { id: 'home_dinner', label: 'Домашний романтический ужин', icon: '🍲', enabled: false },
+        { id: 'steak', label: 'Стейк-хаус', icon: '🥩', enabled: false }
+    ];
+
+    const DEFAULT_ACTIVITIES = [
+        { id: 'cinema', label: 'Кино или фильм', icon: '🍿', enabled: true },
+        { id: 'walk', label: 'Романтичная прогулка', icon: '🌆', enabled: true },
+        { id: 'candle_dinner', label: 'Уютный ужин при свечах', icon: '🕯️', enabled: true },
+        { id: 'coffee_chat', label: 'Атмосферная кофейня', icon: '☕', enabled: true },
+        { id: 'museum', label: 'Выставка или музей', icon: '🎨', enabled: true },
+        { id: 'city_lights', label: 'Ночной город & огни', icon: '🌟', enabled: true },
+        { id: 'board_games', label: 'Настольные игры дома', icon: '🎲', enabled: false },
+        { id: 'spa', label: 'СПА & Релакс', icon: '🧖‍♀️', enabled: false }
+    ];
+
+    const appState = {
+        mode: 'constructor', // 'constructor' | 'guest'
+        currentGuestStep: 1,
+        botUsername: BOT_USERNAME,
+        creatorChatId: DEFAULT_CREATOR_CHAT_ID,
+        creatorName: '',
+        currentInviteId: null,
+        loadedInvite: null,
+        builder: {
+            targetName: '',
+            question: 'Пойдёшь со мной на свидание?',
+            subtitle: 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨',
+            foodList: JSON.parse(JSON.stringify(DEFAULT_FOOD)),
+            activityList: JSON.parse(JSON.stringify(DEFAULT_ACTIVITIES)),
+            customNote: ''
+        },
+        guestAnswers: {
+            food: '',
+            activity: '',
+            date: '',
+            time: '',
+            notes: ''
+        }
+    };
+
+    // --- 7. Extract Query & Telegram Params ---
+    const urlParams = new URLSearchParams(window.location.search);
+    let urlInviteId = urlParams.get('inv') || urlParams.get('invite_id') || urlParams.get('invite');
+    let urlEncodedData = urlParams.get('d') || urlParams.get('data');
+    const startParam = tg?.initDataUnsafe?.start_param;
+
+    if (startParam) {
+        if (startParam.startsWith('d_')) {
+            urlEncodedData = startParam.substring(2);
+        } else {
+            const cleanParam = startParam.replace(/^date_/, 'inv_');
+            if (cleanParam.startsWith('inv_')) {
+                urlInviteId = cleanParam;
+            }
+        }
+    }
+
+    if (tg?.initDataUnsafe?.user) {
+        appState.creatorChatId = String(tg.initDataUnsafe.user.id || DEFAULT_CREATOR_CHAT_ID);
+        appState.creatorName = tg.initDataUnsafe.user.first_name || '';
+    } else {
+        appState.creatorChatId = urlParams.get('creator_id') || DEFAULT_CREATOR_CHAT_ID;
+        appState.creatorName = urlParams.get('creator_name') || '';
+    }
+
+    const forceMode = urlParams.get('mode');
+
+    // --- 8. DOM Elements ---
+    const constructorView = document.getElementById('constructorView');
+    const guestView = document.getElementById('guestView');
+    const modeToggleBtn = document.getElementById('modeToggleBtn');
+    const stepperHeader = document.getElementById('stepperHeader');
+    const backBtn = document.getElementById('backBtn');
+    const stepBadge = document.getElementById('stepBadge');
+    const dots = document.querySelectorAll('.stepper-dots .dot');
+
+    const guestSteps = [
+        document.getElementById('step1'),
+        document.getElementById('step2'),
+        document.getElementById('step3'),
+        document.getElementById('step4'),
+        document.getElementById('step5')
+    ];
+
+    // --- 9. Switch Views (Constructor vs Guest) ---
+    const switchMode = (mode) => {
+        appState.mode = mode;
+        if (mode === 'constructor') {
+            constructorView.classList.add('active');
+            guestView.classList.remove('active');
+            stepperHeader.classList.remove('visible');
+            modeToggleBtn.innerHTML = '👁️ Тест гостя';
+            renderBuilderChips();
+        } else {
+            constructorView.classList.remove('active');
+            guestView.classList.add('active');
+            modeToggleBtn.innerHTML = '🛠 Конструктор';
+            updateGuestStep(1);
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    modeToggleBtn.addEventListener('click', () => {
+        triggerHaptic('medium');
+        if (appState.mode === 'constructor') {
+            prepareGuestFromBuilder();
+            switchMode('guest');
+        } else {
+            switchMode('constructor');
+        }
+    });
+
+    // --- 10. Constructor: Render & Manage Chips ---
+    const builderFoodChips = document.getElementById('builderFoodChips');
+    const builderActivityChips = document.getElementById('builderActivityChips');
+
+    const renderBuilderChips = () => {
+        // Food Chips
+        builderFoodChips.innerHTML = '';
+        appState.builder.foodList.forEach((item) => {
+            const chip = document.createElement('div');
+            chip.className = `builder-chip ${item.enabled ? 'enabled' : ''}`;
+            chip.innerHTML = `
+                <div class="chip-checkbox">${item.enabled ? '✓' : ''}</div>
+                <span class="chip-icon">${item.icon}</span>
+                <span class="chip-text">${item.label}</span>
+            `;
+            chip.addEventListener('click', () => {
+                triggerHaptic('light');
+                item.enabled = !item.enabled;
+                renderBuilderChips();
+            });
+            builderFoodChips.appendChild(chip);
+        });
+
+        // Activity Chips
+        builderActivityChips.innerHTML = '';
+        appState.builder.activityList.forEach((item) => {
+            const chip = document.createElement('div');
+            chip.className = `builder-chip ${item.enabled ? 'enabled' : ''}`;
+            chip.innerHTML = `
+                <div class="chip-checkbox">${item.enabled ? '✓' : ''}</div>
+                <span class="chip-icon">${item.icon}</span>
+                <span class="chip-text">${item.label}</span>
+            `;
+            chip.addEventListener('click', () => {
+                triggerHaptic('light');
+                item.enabled = !item.enabled;
+                renderBuilderChips();
+            });
+            builderActivityChips.appendChild(chip);
+        });
+    };
+
+    // Add Custom Food
+    const customFoodInput = document.getElementById('customFoodInput');
+    const addCustomFoodBtn = document.getElementById('addCustomFoodBtn');
+    addCustomFoodBtn.addEventListener('click', () => {
+        const val = customFoodInput.value.trim();
+        if (!val) return;
+        triggerHaptic('medium');
+        appState.builder.foodList.push({
+            id: 'custom_food_' + Date.now(),
+            label: val,
+            icon: '✨',
+            enabled: true
+        });
+        customFoodInput.value = '';
+        renderBuilderChips();
+        showToast('Вариант еды добавлен! 🍽️');
+    });
+
+    // Add Custom Activity
+    const customActivityInput = document.getElementById('customActivityInput');
+    const addCustomActivityBtn = document.getElementById('addCustomActivityBtn');
+    addCustomActivityBtn.addEventListener('click', () => {
+        const val = customActivityInput.value.trim();
+        if (!val) return;
+        triggerHaptic('medium');
+        appState.builder.activityList.push({
+            id: 'custom_act_' + Date.now(),
+            label: val,
+            icon: '💫',
+            enabled: true
+        });
+        customActivityInput.value = '';
+        renderBuilderChips();
+        showToast('Вариант досуга добавлен! 🎭');
+    });
+
+    // --- 11. Constructor: Generate Invite & Show Share Modal ---
+    const generateInviteBtn = document.getElementById('generateInviteBtn');
+    const shareModal = document.getElementById('shareModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const shareLinkText = document.getElementById('shareLinkText');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+    const shareInTgBtn = document.getElementById('shareInTgBtn');
+    const testInviteBtn = document.getElementById('testInviteBtn');
+
+    let currentGeneratedBotUrl = '';
+    let currentGeneratedWebUrl = '';
+
+    generateInviteBtn.addEventListener('click', async () => {
+        triggerHaptic('success');
+
+        const targetNameInput = document.getElementById('targetNameInput');
+        const customQuestionInput = document.getElementById('customQuestionInput');
+        const customSubtitleInput = document.getElementById('customSubtitleInput');
+
+        const targetName = targetNameInput.value.trim() || 'Моя половинка';
+        const question = customQuestionInput.value.trim() || 'Пойдёшь со мной на свидание?';
+        const subtitle = customSubtitleInput.value.trim() || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
+
+        const enabledFood = appState.builder.foodList.filter(f => f.enabled);
+        const enabledActivity = appState.builder.activityList.filter(a => a.enabled);
+
+        if (enabledFood.length === 0) {
+            showToast('⚠️ Выберите хотя бы 1 вариант еды');
+            return;
+        }
+        if (enabledActivity.length === 0) {
+            showToast('⚠️ Выберите хотя бы 1 вариант досуга');
+            return;
+        }
+
+        const compactState = {
+            t: targetName,
+            q: question,
+            s: subtitle,
+            f: enabledFood.map(item => ({ l: item.label, i: item.icon })),
+            a: enabledActivity.map(item => ({ l: item.label, i: item.icon })),
+            c: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
+            n: appState.creatorName || ''
+        };
+
+        const encoded = encodeInviteState(compactState);
+        const baseUrl = window.location.origin + window.location.pathname;
+
+        // Default direct links with embedded state (always works 100% on any static host)
+        currentGeneratedBotUrl = `https://t.me/${appState.botUsername}?start=d_${encoded}`;
+        currentGeneratedWebUrl = `${baseUrl}?d=${encoded}`;
+
+        const payload = {
+            creatorChatId: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
+            creatorName: appState.creatorName,
+            targetName,
+            question,
+            subtitle,
+            foodOptions: enabledFood,
+            activityOptions: enabledActivity
+        };
+
+        appState.loadedInvite = { id: 'd_' + encoded, ...payload };
+
+        // Try backend API if online
+        try {
+            const res = await fetch('/api/invites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                appState.currentInviteId = data.inviteId;
+                if (data.botUrl) currentGeneratedBotUrl = data.botUrl;
+                if (data.webUrl) currentGeneratedWebUrl = data.webUrl;
+            }
+        } catch (e) {}
+
+        shareLinkText.textContent = currentGeneratedBotUrl;
+        shareModal.classList.add('active');
+        fireConfetti();
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        shareModal.classList.remove('active');
+    });
+
+    copyLinkBtn.addEventListener('click', () => {
+        triggerHaptic('medium');
+        navigator.clipboard.writeText(currentGeneratedBotUrl).then(() => {
+            copyLinkBtn.textContent = 'Скопировано! ✓';
+            showToast('Ссылка скопирована в буфер обмена! 💌');
+            setTimeout(() => { copyLinkBtn.textContent = 'Скопировать'; }, 2000);
+        });
+    });
+
+    shareInTgBtn.addEventListener('click', () => {
+        triggerHaptic('success');
+        const targetName = document.getElementById('targetNameInput').value.trim() || 'тебя';
+        const text = `У меня для ${targetName === 'тебя' ? 'тебя' : targetName} особенный вопрос и сюрприз... 💌✨\n\nОткрой приглашение:`;
+        const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(currentGeneratedBotUrl)}&text=${encodeURIComponent(text)}`;
+        window.open(shareUrl, '_blank');
+    });
+
+    testInviteBtn.addEventListener('click', () => {
+        triggerHaptic('medium');
+        shareModal.classList.remove('active');
+        if (appState.loadedInvite) {
+            setupGuestViewWithInvite(appState.loadedInvite);
+        } else {
+            prepareGuestFromBuilder();
+        }
+        switchMode('guest');
+    });
+
+    // --- 12. Guest Flow Stepper ---
+    const updateGuestStep = (stepIndex) => {
+        appState.currentGuestStep = stepIndex;
+
+        guestSteps.forEach((step, idx) => {
+            if (idx + 1 === stepIndex) {
+                step.classList.add('active');
+            } else {
+                step.classList.remove('active');
+            }
+        });
+
+        if (stepIndex > 1) {
+            stepperHeader.classList.add('visible');
+            dots.forEach((dot, idx) => {
+                if (idx + 1 === stepIndex) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+            if (stepIndex === 5) {
+                stepBadge.textContent = 'Готово! 🎉';
+            } else {
+                stepBadge.textContent = `Шаг ${stepIndex - 1} из 3`;
+            }
+        } else {
+            stepperHeader.classList.remove('visible');
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    backBtn.addEventListener('click', () => {
+        triggerHaptic('light');
+        if (appState.currentGuestStep > 1 && appState.currentGuestStep < 5) {
+            updateGuestStep(appState.currentGuestStep - 1);
+        } else if (appState.currentGuestStep === 5) {
+            updateGuestStep(4);
+        }
+    });
+
+    // Step 1: Running "No" Button
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const noPhrases = [
+        "Нет 😢", "Ты уверена? 🤔", "Подумай ещё! 🥺",
+        "Не поймаешь 😜", "Ой, мимо! 🙈", "Кнопка сломалась 💔", "Ну нажми Да! 💕"
+    ];
+    let phraseIndex = 0;
+
+    const moveNoButton = (e) => {
+        if (e) e.preventDefault();
+        triggerHaptic('warning');
+
+        noBtn.style.position = 'fixed';
+        const padding = 20;
+        const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+        const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+        const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+        const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+        noBtn.style.left = `${randomX}px`;
+        noBtn.style.top = `${randomY}px`;
+
+        phraseIndex = (phraseIndex + 1) % noPhrases.length;
+        noBtn.textContent = noPhrases[phraseIndex];
+    };
+
+    noBtn.addEventListener('mouseover', moveNoButton);
+    noBtn.addEventListener('touchstart', (e) => { moveNoButton(e); }, { passive: false });
+    noBtn.addEventListener('click', (e) => { moveNoButton(e); });
+
+    yesBtn.addEventListener('click', () => {
+        triggerHaptic('success');
+        fireConfetti();
+        noBtn.style.position = 'relative';
+        noBtn.style.left = 'auto';
+        noBtn.style.top = 'auto';
+        noBtn.textContent = "Нет 😢";
+
+        setTimeout(() => {
+            updateGuestStep(2);
+        }, 350);
+    });
+
+    // --- 13. Setup Guest View from Invite / Builder Data ---
+    const guestFoodOptionsContainer = document.getElementById('guestFoodOptions');
+    const guestActivityOptionsContainer = document.getElementById('guestActivityOptions');
+    const nextToActivityBtn = document.getElementById('nextToActivityBtn');
+    const nextToTimeBtn = document.getElementById('nextToTimeBtn');
+    const guestMainTitle = document.getElementById('guestMainTitle');
+    const guestSubtitle = document.getElementById('guestSubtitle');
+
+    const setupGuestViewWithInvite = (invite) => {
+        appState.loadedInvite = invite;
+        appState.currentInviteId = invite.id;
+
+        const target = invite.targetName || 'Любимая';
+        const questionText = invite.question || 'Пойдёшь со мной на свидание?';
+        guestMainTitle.innerHTML = `${target}, ${questionText} <span class="heart-pulse">💖</span>`;
+        guestSubtitle.textContent = invite.subtitle || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
+
+        // Populate Food
+        guestFoodOptionsContainer.innerHTML = '';
+        nextToActivityBtn.disabled = true;
+        const foods = (invite.foodOptions || DEFAULT_FOOD).filter(f => f.enabled !== false);
+        foods.forEach(food => {
+            const card = document.createElement('div');
+            card.className = 'option-card';
+            card.setAttribute('data-value', food.label);
+            card.innerHTML = `
+                <span class="option-icon">${food.icon || '🍽️'}</span>
+                <span class="option-label">${food.label}</span>
+            `;
+            card.addEventListener('click', () => {
+                triggerHaptic('light');
+                document.querySelectorAll('#guestFoodOptions .option-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                appState.guestAnswers.food = food.label;
+                nextToActivityBtn.disabled = false;
+            });
+            guestFoodOptionsContainer.appendChild(card);
+        });
+
+        // Populate Activities
+        guestActivityOptionsContainer.innerHTML = '';
+        nextToTimeBtn.disabled = true;
+        const activities = (invite.activityOptions || DEFAULT_ACTIVITIES).filter(a => a.enabled !== false);
+        activities.forEach(act => {
+            const card = document.createElement('div');
+            card.className = 'option-card';
+            card.setAttribute('data-value', act.label);
+            card.innerHTML = `
+                <span class="option-icon">${act.icon || '✨'}</span>
+                <span class="option-label">${act.label}</span>
+            `;
+            card.addEventListener('click', () => {
+                triggerHaptic('light');
+                document.querySelectorAll('#guestActivityOptions .option-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                appState.guestAnswers.activity = act.label;
+                nextToTimeBtn.disabled = false;
+            });
+            guestActivityOptionsContainer.appendChild(card);
+        });
+    };
+
+    const prepareGuestFromBuilder = () => {
+        const target = document.getElementById('targetNameInput').value.trim() || 'Моя половинка';
+        const question = document.getElementById('customQuestionInput').value.trim() || 'Пойдёшь со мной на свидание?';
+        const subtitle = document.getElementById('customSubtitleInput').value.trim() || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨';
+
+        setupGuestViewWithInvite({
+            id: appState.currentInviteId || 'test_preview',
+            creatorChatId: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
+            targetName: target,
+            question,
+            subtitle,
+            foodOptions: appState.builder.foodList,
+            activityOptions: appState.builder.activityList
+        });
+    };
+
+    nextToActivityBtn.addEventListener('click', () => {
+        triggerHaptic('medium');
+        updateGuestStep(3);
+    });
+
+    nextToTimeBtn.addEventListener('click', () => {
+        triggerHaptic('medium');
+        updateGuestStep(4);
+    });
+
+    // Step 4: Date, Time & Presets
+    const datePicker = document.getElementById('datePicker');
+    const timePicker = document.getElementById('timePicker');
+    const notesInput = document.getElementById('notesInput');
+    const finishBtn = document.getElementById('finishBtn');
+    const presetBtns = document.querySelectorAll('.chip-btn');
+
+    const today = new Date();
+    const formatDateYYYYMMDD = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    datePicker.min = formatDateYYYYMMDD(today);
+
+    const validateStep4 = () => {
+        if (datePicker.value && timePicker.value) {
+            appState.guestAnswers.date = datePicker.value;
+            appState.guestAnswers.time = timePicker.value;
+            appState.guestAnswers.notes = notesInput.value.trim();
+            finishBtn.disabled = false;
+        } else {
+            finishBtn.disabled = true;
+        }
+    };
+
+    datePicker.addEventListener('change', () => {
+        presetBtns.forEach(btn => btn.classList.remove('active'));
+        validateStep4();
+    });
+    timePicker.addEventListener('change', validateStep4);
+    notesInput.addEventListener('input', () => {
+        appState.guestAnswers.notes = notesInput.value.trim();
+    });
+
+    presetBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            triggerHaptic('light');
+            presetBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const preset = btn.getAttribute('data-preset');
+            const targetDate = new Date();
+
+            if (preset === 'today') {
+                // Today
+            } else if (preset === 'tomorrow') {
+                targetDate.setDate(targetDate.getDate() + 1);
+            } else if (preset === 'friday') {
+                const day = targetDate.getDay();
+                const diff = (5 - day + 7) % 7 || 7;
+                targetDate.setDate(targetDate.getDate() + diff);
+            } else if (preset === 'weekend') {
+                const day = targetDate.getDay();
+                const diff = (6 - day + 7) % 7 || 7;
+                targetDate.setDate(targetDate.getDate() + diff);
+            }
+
+            datePicker.value = formatDateYYYYMMDD(targetDate);
+            if (!timePicker.value) timePicker.value = '19:00';
+            validateStep4();
+        });
+    });
+
+    // Step 5: Finish & Universal Delivery
+    const summaryFood = document.getElementById('summaryFood');
+    const summaryActivity = document.getElementById('summaryActivity');
+    const summaryDate = document.getElementById('summaryDate');
+    const summaryTime = document.getElementById('summaryTime');
+    const summaryNote = document.getElementById('summaryNote');
+    const summaryNoteRow = document.getElementById('summaryNoteRow');
+    const sendTgBtn = document.getElementById('sendTgBtn');
+
+    const formatDisplayDate = (isoDate) => {
+        if (!isoDate) return '';
+        const [y, m, d] = isoDate.split('-');
+        const dateObj = new Date(y, m - 1, d);
+        return dateObj.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            weekday: 'short'
+        });
+    };
+
+    finishBtn.addEventListener('click', async () => {
+        triggerHaptic('success');
+        appState.guestAnswers.notes = notesInput.value.trim();
+
+        const formattedDate = formatDisplayDate(appState.guestAnswers.date);
+        summaryFood.textContent = appState.guestAnswers.food || 'Вкусно покушать';
+        summaryActivity.textContent = appState.guestAnswers.activity || 'Отличный вечер';
+        summaryDate.textContent = formattedDate;
+        summaryTime.textContent = appState.guestAnswers.time || '19:00';
+
+        if (appState.guestAnswers.notes) {
+            summaryNote.textContent = appState.guestAnswers.notes;
+            summaryNoteRow.style.display = 'grid';
+        } else {
+            summaryNoteRow.style.display = 'none';
+        }
+
+        updateGuestStep(5);
+        fireConfetti();
+
+        const creatorChatId = appState.loadedInvite?.creatorChatId || DEFAULT_CREATOR_CHAT_ID;
+        const targetName = appState.loadedInvite?.targetName || 'Гостья';
+
+        let botMsg = `🎉💖 *Ура! Твоё приглашение на свидание принято!* 🥰\n\n`;
+        botMsg += `👤 *От кого:* ${targetName}\n`;
+        botMsg += `🍽️ *Еда:* ${appState.guestAnswers.food}\n`;
+        botMsg += `🎭 *План:* ${appState.guestAnswers.activity}\n`;
+        botMsg += `📅 *Дата:* ${formattedDate}\n`;
+        botMsg += `⏰ *Время:* ${appState.guestAnswers.time}\n`;
+        if (appState.guestAnswers.notes) {
+            botMsg += `💬 *Пожелание:* «${appState.guestAnswers.notes}»\n`;
+        }
+        botMsg += `\n✨ _Готовься к идеальному вечеру!_ 🥂`;
+
+        // 1. Direct Telegram Bot API Call (Works 100% on ANY static host / Netlify / GitHub Pages!)
+        try {
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: creatorChatId,
+                    text: botMsg,
+                    parse_mode: 'Markdown'
+                })
+            }).catch(() => {});
+        } catch (e) {}
+
+        // 2. Also notify backend API if reachable
+        const inviteId = appState.currentInviteId;
+        if (inviteId && !inviteId.startsWith('d_')) {
+            try {
+                fetch(`/api/invites/${inviteId}/respond`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        food: appState.guestAnswers.food,
+                        activity: appState.guestAnswers.activity,
+                        date: formattedDate,
+                        time: appState.guestAnswers.time,
+                        notes: appState.guestAnswers.notes,
+                        respondentName: targetName
+                    })
+                }).catch(() => {});
+            } catch (e) {}
+        }
+    });
+
+    sendTgBtn.addEventListener('click', () => {
+        triggerHaptic('medium');
+        const formattedDate = formatDisplayDate(appState.guestAnswers.date);
+        let text = `Я согласна на свидание! 🎉💖\n\n🍽️ Еда: ${appState.guestAnswers.food}\n🎭 План: ${appState.guestAnswers.activity}\n📅 Дата: ${formattedDate}\n⏰ Время: ${appState.guestAnswers.time}`;
+        if (appState.guestAnswers.notes) {
+            text += `\n💬 Пожелание: ${appState.guestAnswers.notes}`;
+        }
+        text += `\n\nЖду встречи! 🥰✨`;
+
+        if (tg && typeof tg.sendData === 'function') {
+            tg.sendData(text);
+        } else {
+            const telegramUrl = `https://t.me/share/url?url=&text=${encodeURIComponent(text)}`;
+            window.open(telegramUrl, '_blank');
+        }
+    });
+
+    // --- 14. Initial Bootstrapping & State Parsing ---
+    const initApp = async () => {
+        renderBuilderChips();
+
+        // 1. Check for Base64 encoded state in URL
+        if (urlEncodedData) {
+            const parsed = decodeInviteState(urlEncodedData);
+            if (parsed) {
+                const inviteData = {
+                    id: 'd_' + urlEncodedData,
+                    creatorChatId: parsed.c || DEFAULT_CREATOR_CHAT_ID,
+                    creatorName: parsed.n || '',
+                    targetName: parsed.t || 'Моя половинка',
+                    question: parsed.q || 'Пойдёшь со мной на свидание?',
+                    subtitle: parsed.s || 'Обещаю вкусную еду, тёплую атмосферу и классные воспоминания ✨',
+                    foodOptions: (parsed.f || []).map((f, i) => ({ id: 'f_' + i, label: f.l, icon: f.i, enabled: true })),
+                    activityOptions: (parsed.a || []).map((a, i) => ({ id: 'a_' + i, label: a.l, icon: a.i, enabled: true }))
+                };
+                setupGuestViewWithInvite(inviteData);
+                switchMode('guest');
+                return;
+            }
+        }
+
+        // 2. Check for backend invite ID
+        if (urlInviteId && urlInviteId !== 'preview') {
+            try {
+                const res = await fetch(`/api/invites/${urlInviteId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setupGuestViewWithInvite(data.invite);
+                    switchMode('guest');
+                    return;
+                }
+            } catch (e) {}
+
+            prepareGuestFromBuilder();
+            switchMode('guest');
+            return;
+        }
+
+        if (forceMode === 'guest') {
+            prepareGuestFromBuilder();
+            switchMode('guest');
+        } else {
+            // Default is Constructor Mode
+            switchMode('constructor');
+        }
+    };
+
+    initApp();
+});
+
+</script>
+</body>
+
+</html>
