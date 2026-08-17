@@ -1753,8 +1753,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const encoded = encodeInviteState(compactState);
             const baseUrl = window.location.origin + window.location.pathname;
             
-            // Direct web URL with embedded full state (works 100% reliably anywhere)
-            currentGeneratedUrl = `${baseUrl}?d=${encoded}`;
+            // 1. Direct Web URL with embedded state
+            const directWebUrl = `${baseUrl}?d=${encoded}`;
+            
+            // 2. Official Telegram Bot Link that opens the bot and triggers invite notification
+            const botDeepLink = `https://t.me/${appState.botUsername}?start=d_${encoded}`;
+            
+            currentGeneratedUrl = botDeepLink;
+            currentGeneratedBotUrl = botDeepLink;
+            currentGeneratedWebUrl = directWebUrl;
 
             const payload = {
                 creatorChatId: appState.creatorChatId || DEFAULT_CREATOR_CHAT_ID,
@@ -1768,11 +1775,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             appState.loadedInvite = { id: 'd_' + encoded, ...payload };
 
+            // Try backend API for even shorter link if online
+            try {
+                fetch('/api/invites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(r => r.json()).then(data => {
+                    if (data && data.inviteId) {
+                        appState.currentInviteId = data.inviteId;
+                        currentGeneratedUrl = `https://t.me/${appState.botUsername}?start=${data.inviteId}`;
+                        currentGeneratedBotUrl = currentGeneratedUrl;
+                        if (shareLinkText) shareLinkText.textContent = currentGeneratedUrl;
+                    }
+                }).catch(() => {});
+            } catch (e) {}
+
             shareLinkText.textContent = currentGeneratedUrl;
             shareModal.classList.add('active');
             fireConfetti();
         });
     }
+
+    let currentGeneratedBotUrl = '';
+    let currentGeneratedWebUrl = '';
 
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', () => {
@@ -1783,7 +1809,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (copyLinkBtn) {
         copyLinkBtn.addEventListener('click', () => {
             triggerHaptic('medium');
-            navigator.clipboard.writeText(currentGeneratedUrl).then(() => {
+            const linkToCopy = currentGeneratedBotUrl || currentGeneratedUrl;
+            navigator.clipboard.writeText(linkToCopy).then(() => {
                 copyLinkBtn.textContent = 'Скопировано! ✓';
                 showToast('Ссылка скопирована в буфер обмена! 💌');
                 setTimeout(() => { copyLinkBtn.textContent = 'Скопировать'; }, 2000);
@@ -1795,8 +1822,9 @@ document.addEventListener('DOMContentLoaded', () => {
         shareInTgBtn.addEventListener('click', () => {
             triggerHaptic('success');
             const targetName = document.getElementById('targetNameInput')?.value.trim() || 'тебя';
-            const text = `У меня для ${targetName === 'тебя' ? 'тебя' : targetName} особенный сюрприз и приглашение... 💌✨\n\nОткрой свидание:`;
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(currentGeneratedUrl)}&text=${encodeURIComponent(text)}`;
+            const text = `У меня для ${targetName === 'тебя' ? 'тебя' : targetName} особенный сюрприз и романтическое приглашение... 💌✨\n\nОткрой приглашение:`;
+            const linkToShare = currentGeneratedBotUrl || currentGeneratedUrl;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(linkToShare)}&text=${encodeURIComponent(text)}`;
             window.open(shareUrl, '_blank');
         });
     }
